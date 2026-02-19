@@ -1,0 +1,44 @@
+{
+  "hooks": [
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Write",
+        "path": "**/*.ts"
+      },
+      "command": "cd /Users/roirevach/Desktop/Shidduch/Bashert && npx tsc --noEmit --pretty 2>&1 | head -20"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Write",
+        "path": "**/*.tsx"
+      },
+      "command": "cd /Users/roirevach/Desktop/Shidduch/Bashert && npx tsc --noEmit --pretty 2>&1 | head -20"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Edit",
+        "path": "**/*.ts"
+      },
+      "command": "cd /Users/roirevach/Desktop/Shidduch/Bashert && npx tsc --noEmit --pretty 2>&1 | head -20"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Edit",
+        "path": "**/*.tsx"
+      },
+      "command": "cd /Users/roirevach/Desktop/Shidduch/Bashert && npx tsc --noEmit --pretty 2>&1 | head -20"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool": "Write",
+        "path": "**/*.ts"
+      },
+      "command": "grep -n 'console.log' \"$CLAUDE_FILE\" 2>/dev/null && echo '⚠️  WARNING: console.log found - remove before commit' || true"
+    }
+  ]
+}
