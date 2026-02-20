@@ -9,13 +9,21 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
-    const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    try {
+      const supabase = await createSupabaseServerClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      // Sync user to Prisma database after successful authentication
-      await syncUserAfterAuth();
-      return NextResponse.redirect(`${origin}${next}`);
+      if (!error) {
+        // Sync user to Prisma database after successful authentication
+        try {
+          await syncUserAfterAuth();
+        } catch {
+          // Non-critical: user will be synced on next request
+        }
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+    } catch {
+      // Fall through to error redirect
     }
   }
 

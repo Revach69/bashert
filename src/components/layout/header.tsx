@@ -7,14 +7,20 @@ import { getSession, getCurrentUser } from "@/lib/auth";
 import type { Role } from "@prisma/client";
 
 export async function Header() {
-  const session = await getSession();
-  const user = session ? await getCurrentUser() : null;
+  let isAuthenticated = false;
+  let isMatchmaker = false;
+  let isOrganizer = false;
 
-  const isAuthenticated = !!user;
-  const roles: Role[] = user?.roles ?? [];
-
-  const isMatchmaker = roles.includes("matchmaker");
-  const isOrganizer = roles.includes("organizer");
+  try {
+    const session = await getSession();
+    const user = session ? await getCurrentUser() : null;
+    isAuthenticated = !!user;
+    const roles: Role[] = user?.roles ?? [];
+    isMatchmaker = roles.includes("matchmaker");
+    isOrganizer = roles.includes("organizer");
+  } catch {
+    // Fall back to unauthenticated state on auth/DB errors
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
