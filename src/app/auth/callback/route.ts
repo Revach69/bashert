@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { syncUserAfterAuth } from "@/app/actions/auth";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -12,6 +13,8 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      // Sync user to Prisma database after successful authentication
+      await syncUserAfterAuth();
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
