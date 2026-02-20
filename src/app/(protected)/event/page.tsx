@@ -1,11 +1,42 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CalendarDays, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import type { Metadata } from "next"
 
-export default function EventPage() {
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { CreateEventDialog } from "@/components/events/create-event-dialog"
+import { EventList } from "@/components/events/event-list"
+import { JoinEventForm } from "@/components/events/join-event-form"
+
+// ─── Metadata ───────────────────────────────────────────────────────────────────
+
+export const metadata: Metadata = {
+  title: "אירועים | באשרט",
+  description: "ניהול אירועים והצטרפות לאירועים חדשים",
+}
+
+// ─── Data fetching placeholder ──────────────────────────────────────────────────
+
+async function getMyEvents() {
+  // Placeholder - will call server action / prisma query
+  // import { getMyEvents } from "@/app/actions/event"
+  // const result = await getMyEvents()
+  // return result.success ? result.data : []
+  return []
+}
+
+// ─── Page Component (Server Component) ──────────────────────────────────────────
+
+export default async function EventPage() {
+  const events = await getMyEvents()
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Page header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold">אירועים</h1>
         <p className="mt-2 text-muted-foreground">
@@ -13,34 +44,28 @@ export default function EventPage() {
         </p>
       </div>
 
-      {/* Join Event by Code */}
+      {/* Join Event section */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle>הצטרפות לאירוע</CardTitle>
-          <CardDescription>הזינו את קוד האירוע שקיבלתם מהמארגן</CardDescription>
+          <CardDescription>
+            הזינו את קוד האירוע שקיבלתם מהמארגן
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* TODO: Implement event join logic */}
-          <div className="flex gap-3">
-            <Input placeholder="קוד אירוע" className="max-w-xs" />
-            <Button>
-              <Search className="size-4" />
-              הצטרפות
-            </Button>
-          </div>
+          <JoinEventForm />
         </CardContent>
       </Card>
 
-      {/* Active Events */}
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-16">
-          <CalendarDays className="mb-4 size-16 text-muted-foreground/50" />
-          <CardTitle className="mb-2">אין אירועים פעילים</CardTitle>
-          <CardDescription className="text-center">
-            הצטרפו לאירוע באמצעות קוד הזמנה כדי לגלוש בפרופילים
-          </CardDescription>
-        </CardContent>
-      </Card>
+      <Separator className="mb-8" />
+
+      {/* My Events section */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">האירועים שלי</h2>
+        <CreateEventDialog />
+      </div>
+
+      <EventList events={events} />
     </div>
-  );
+  )
 }
