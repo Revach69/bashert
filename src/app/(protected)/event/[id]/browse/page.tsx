@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react"
 import { getEventById } from "@/app/actions/event"
 import { getEventBrowseProfiles } from "@/app/actions/browse"
 import { getSentInterestTargetIds } from "@/app/actions/interest"
-import { getMyProfileIds } from "@/app/actions/profile"
+import { getMyProfiles } from "@/app/actions/profile"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { BrowsePageContent } from "@/components/browse/browse-page-content"
@@ -26,17 +26,22 @@ type PageProps = {
 export default async function BrowsePage({ params }: PageProps) {
   const { id } = await params
 
-  const [eventResult, profilesResult, profileIdsResult, sentIdsResult] =
+  const [eventResult, profilesResult, myProfilesResult, sentIdsResult] =
     await Promise.all([
       getEventById(id),
       getEventBrowseProfiles(id),
-      getMyProfileIds(),
+      getMyProfiles(),
       getSentInterestTargetIds(id),
     ])
 
   const event = eventResult.success ? eventResult.data : null
   const profiles = profilesResult.success ? profilesResult.data : []
-  const userProfileIds = profileIdsResult.success ? profileIdsResult.data : []
+  const myProfiles = myProfilesResult.success ? myProfilesResult.data : []
+  const userProfileIds = myProfiles.map((p) => p.id)
+  const userProfileOptions = myProfiles.map((p) => ({
+    value: p.id,
+    label: `${p.subject_first_name} ${p.subject_last_name}`,
+  }))
   const sentInterestProfileIds = sentIdsResult.success ? sentIdsResult.data : []
 
   if (!event) {
@@ -80,6 +85,7 @@ export default async function BrowsePage({ params }: PageProps) {
         eventId={id}
         userProfileIds={userProfileIds}
         sentInterestProfileIds={sentInterestProfileIds}
+        userProfileOptions={userProfileOptions}
       />
     </div>
   )

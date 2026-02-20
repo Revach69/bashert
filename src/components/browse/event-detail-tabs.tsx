@@ -13,12 +13,18 @@ import { MyRequestsList } from "@/components/browse/my-requests-list"
 
 type Tab = "browse" | "requests"
 
+type UserProfileOption = {
+  value: string
+  label: string
+}
+
 type EventDetailTabsProps = {
   profiles: EventBrowseProfile[]
   requests: InterestRequestWithProfiles[]
   eventId: string
   userProfileIds: string[]
   sentInterestProfileIds: string[]
+  userProfileOptions?: UserProfileOption[]
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
@@ -29,6 +35,7 @@ export function EventDetailTabs({
   eventId,
   userProfileIds,
   sentInterestProfileIds,
+  userProfileOptions,
 }: EventDetailTabsProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("browse")
 
@@ -76,6 +83,7 @@ export function EventDetailTabs({
           eventId={eventId}
           userProfileIds={userProfileIds}
           sentInterestProfileIds={sentInterestProfileIds}
+          userProfileOptions={userProfileOptions}
         />
       )}
 

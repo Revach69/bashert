@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { OrganizerJoinCodeCopy } from "@/components/organizer/join-code-copy";
+import { EventActions } from "@/components/organizer/event-actions";
 
 export default async function OrganizerPage() {
   const result = await getOrganizerStats();
@@ -174,12 +175,13 @@ export default async function OrganizerPage() {
                     <OrganizerJoinCodeCopy joinCode={event.join_code} />
                   </CardContent>
 
-                  <div className="px-6 pb-6">
+                  <div className="space-y-2 px-6 pb-6">
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/event/${event.id}`}>
                         צפייה באירוע
                       </Link>
                     </Button>
+                    <EventActions eventId={event.id} isActive={isActive} />
                   </div>
                 </Card>
               );

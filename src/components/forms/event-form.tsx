@@ -73,6 +73,16 @@ export function EventForm({ onSuccess }: EventFormProps) {
         />
       </div>
 
+      {/* Location */}
+      <div className="grid gap-2">
+        <Label htmlFor="location">מיקום (אופציונלי)</Label>
+        <Input
+          id="location"
+          name="location"
+          placeholder="כתובת או שם המקום"
+        />
+      </div>
+
       {/* Event date */}
       <div className="grid gap-2">
         <Label htmlFor="event_date">תאריך האירוע</Label>

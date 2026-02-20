@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { CalendarDays, CheckCircle2, Clock, Eye, Hash, Users } from "lucide-react"
+import { CalendarDays, CheckCircle2, Clock, Eye, Hash, MapPin, Users } from "lucide-react"
 
 import { formatHebrewDate, formatTime } from "@/lib/utils"
 import { getEventById, getEventParticipants } from "@/app/actions/event"
@@ -18,6 +18,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { EventDetailTabs } from "@/components/browse/event-detail-tabs"
 import { OptInProfileForm } from "@/components/events/opt-in-profile-form"
+import { LeaveEventButton } from "@/components/events/leave-event-button"
 
 // ─── Metadata ───────────────────────────────────────────────────────────────────
 
@@ -66,6 +67,15 @@ export default async function EventDetailPage({ params }: PageProps) {
       id: p.id,
       name: `${p.subject_first_name} ${p.subject_last_name}`,
     }))
+
+  // Build profile options with actual names for the interest selector
+  const userProfileOptions = myProfiles.map((p) => ({
+    value: p.id,
+    label: `${p.subject_first_name} ${p.subject_last_name}`,
+  }))
+
+  // Build opted-in profile data with names for the leave button display
+  const userOptedInProfiles = myProfiles.filter((p) => participantProfileIds.has(p.id))
 
   if (!event) {
     return (
@@ -118,6 +128,14 @@ export default async function EventDetailPage({ params }: PageProps) {
             </span>
           </div>
 
+          {/* Location */}
+          {event.location && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="size-4 shrink-0" />
+              <span>{event.location}</span>
+            </div>
+          )}
+
           {/* Participant count */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Users className="size-4 shrink-0" />
@@ -140,21 +158,47 @@ export default async function EventDetailPage({ params }: PageProps) {
 
       {/* Opt-in section */}
       {hasOptedIn && userNotOptedInProfileIds.length === 0 ? (
-        <div className="mb-8 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
-          <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
-          <p className="text-sm font-medium text-green-700 dark:text-green-300">
-            אתם משתתפים באירוע זה
-          </p>
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
+            <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">
+              אתם משתתפים באירוע זה
+            </p>
+          </div>
+          {/* Leave buttons for each opted-in profile */}
+          <div className="flex flex-wrap gap-3">
+            {userOptedInProfiles.map((p) => (
+              <div key={p.id} className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {p.subject_first_name} {p.subject_last_name}
+                </span>
+                <LeaveEventButton eventId={id} profileId={p.id} />
+              </div>
+            ))}
+          </div>
         </div>
       ) : userNotOptedInProfileIds.length > 0 ? (
         <div className="mb-8 space-y-3">
           {hasOptedIn && (
-            <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
-              <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
-              <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                חלק מהפרופילים שלכם כבר משתתפים באירוע
-              </p>
-            </div>
+            <>
+              <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
+                <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                  חלק מהפרופילים שלכם כבר משתתפים באירוע
+                </p>
+              </div>
+              {/* Leave buttons for each opted-in profile */}
+              <div className="flex flex-wrap gap-3">
+                {userOptedInProfiles.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {p.subject_first_name} {p.subject_last_name}
+                    </span>
+                    <LeaveEventButton eventId={id} profileId={p.id} />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
           <OptInProfileForm
             eventId={id}
@@ -192,6 +236,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         eventId={id}
         userProfileIds={userProfileIds}
         sentInterestProfileIds={sentInterestProfileIds}
+        userProfileOptions={userProfileOptions}
       />
     </div>
   )

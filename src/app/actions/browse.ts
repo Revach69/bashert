@@ -1,5 +1,6 @@
 'use server';
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { isEventAccessible, calculateAge } from '@/lib/utils';
@@ -100,8 +101,7 @@ export async function getEventBrowseProfiles(
     const userProfileIds = userProfiles.map((p) => p.id);
 
     // Build where clause for profile filters
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const profileWhere: Record<string, any> = {
+    const profileWhere: Prisma.ProfileCardWhereInput = {
       is_active: true,
     };
 
@@ -122,8 +122,7 @@ export async function getEventBrowseProfiles(
     }
 
     // Build participation where clause, excluding user's own profiles if any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const participationWhere: Record<string, any> = {
+    const participationWhere: Prisma.EventParticipationWhereInput = {
       event_id: eventId,
       profile: profileWhere,
     };

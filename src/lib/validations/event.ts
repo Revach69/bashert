@@ -3,13 +3,19 @@ import { z } from 'zod';
 export const createEventSchema = z.object({
   name: z.string().min(1, 'שם האירוע נדרש').max(200),
   description: z.string().optional().or(z.literal('')),
+  location: z.string().max(500).optional(),
   event_date: z.coerce.date({ error: 'תאריך נדרש' }),
   start_time: z.coerce.date({ error: 'שעת התחלה נדרשת' }),
   end_time: z.coerce.date({ error: 'שעת סיום נדרשת' }),
   pre_access_hours: z.coerce.number().int().min(0).max(72).default(0),
   post_access_hours: z.coerce.number().int().min(0).max(72).default(0),
   matchmaker_id: z.string().uuid().optional(),
-});
+}).refine((data) => {
+  if (data.start_time && data.end_time) {
+    return data.end_time > data.start_time;
+  }
+  return true;
+}, { message: 'שעת סיום חייבת להיות אחרי שעת התחלה', path: ['end_time'] });
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 
@@ -17,6 +23,7 @@ export const updateEventSchema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).optional(),
+  location: z.string().max(500).optional(),
   event_date: z.coerce.date().optional(),
   start_time: z.coerce.date().optional(),
   end_time: z.coerce.date().optional(),

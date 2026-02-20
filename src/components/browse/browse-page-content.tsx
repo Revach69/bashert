@@ -18,11 +18,17 @@ import { ProfileFiltersPanel } from "@/components/browse/profile-filters"
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
+type UserProfileOption = {
+  value: string
+  label: string
+}
+
 type BrowsePageContentProps = {
   allProfiles: EventBrowseProfile[]
   eventId: string
   userProfileIds: string[]
   sentInterestProfileIds: string[]
+  userProfileOptions?: UserProfileOption[]
 }
 
 // ─── Filter logic ───────────────────────────────────────────────────────────────
@@ -81,6 +87,7 @@ export function BrowsePageContent({
   eventId,
   userProfileIds,
   sentInterestProfileIds,
+  userProfileOptions,
 }: BrowsePageContentProps) {
   const [filters, setFilters] = React.useState<ProfileFilters>({})
   const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false)
@@ -145,6 +152,7 @@ export function BrowsePageContent({
           eventId={eventId}
           userProfileIds={userProfileIds}
           sentInterestProfileIds={sentInterestProfileIds}
+          userProfileOptions={userProfileOptions}
         />
       </div>
     </div>

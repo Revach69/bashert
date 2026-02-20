@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { ProfileCard } from "@prisma/client"
+import type { ProfileWithCreator } from "@/types"
 import { Pencil, Trash2, User as UserIcon } from "lucide-react"
 
 import { calculateAge } from "@/lib/utils"
@@ -28,7 +28,7 @@ import { ProfileForm } from "@/components/forms/profile-form"
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type ProfileCardItemProps = {
-  profile: ProfileCard
+  profile: ProfileWithCreator
   onDelete?: (id: string) => void
 }
 

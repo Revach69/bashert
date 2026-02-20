@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { ProfileCard } from "@prisma/client"
+import type { ProfileWithCreator } from "@/types"
 import { UserCircle } from "lucide-react"
 
 import { deleteProfile as deleteProfileAction } from "@/app/actions/profile"
@@ -17,14 +17,14 @@ import { CreateProfileDialog } from "@/components/profiles/create-profile-dialog
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type ProfileListProps = {
-  profiles: ProfileCard[]
+  profiles: ProfileWithCreator[]
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function ProfileList({ profiles: initialProfiles }: ProfileListProps) {
   const [profiles, setProfiles] =
-    React.useState<ProfileCard[]>(initialProfiles)
+    React.useState<ProfileWithCreator[]>(initialProfiles)
 
   async function handleDelete(id: string) {
     const result = await deleteProfileAction(id)

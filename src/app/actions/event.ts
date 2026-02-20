@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { createEventSchema, updateEventSchema } from '@/lib/validations/event';
 import { generateJoinCode } from '@/lib/utils';
+import { revalidatePath } from 'next/cache';
 import type { ActionResponse, EventWithDetails, ProfileWithCreator } from '@/types';
 import type { Event, EventParticipation } from '@prisma/client';
 
@@ -106,6 +107,7 @@ export async function createEvent(
     const rawData = {
       name: formData.get('name') as string,
       description: formData.get('description') as string,
+      location: formData.get('location') as string,
       event_date: formData.get('event_date') as string,
       start_time: formData.get('start_time') as string,
       end_time: formData.get('end_time') as string,
@@ -144,6 +146,7 @@ export async function createEvent(
         matchmaker_id: data.matchmaker_id || null,
         name: data.name,
         description: data.description || null,
+        location: data.location || null,
         event_date: data.event_date,
         start_time: data.start_time,
         end_time: data.end_time,
@@ -438,6 +441,7 @@ export async function updateEvent(
       id: formData.get('id') as string,
       name: formData.get('name') as string || undefined,
       description: formData.get('description') as string || undefined,
+      location: formData.get('location') as string || undefined,
       event_date: formData.get('event_date') as string || undefined,
       start_time: formData.get('start_time') as string || undefined,
       end_time: formData.get('end_time') as string || undefined,
@@ -513,5 +517,131 @@ export async function toggleEventActive(
   } catch (error) {
     console.error('toggleEventActive error:', error);
     return { success: false, error: 'שגיאה בשינוי סטטוס האירוע' };
+  }
+}
+
+// ─── Leave Event (opt-out) ──────────────────────────────────────────────────
+
+export async function leaveEvent(
+  eventId: string,
+  profileId: string
+): Promise<ActionResponse<null>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי לעזוב אירוע' };
+    }
+
+    // Verify the profile belongs to the current user
+    const profile = await prisma.profileCard.findUnique({
+      where: { id: profileId },
+      select: { creator_id: true },
+    });
+
+    if (!profile) {
+      return { success: false, error: 'הכרטיס לא נמצא' };
+    }
+
+    if (profile.creator_id !== user.id) {
+      return { success: false, error: 'אין הרשאה להסיר כרטיס זה מהאירוע' };
+    }
+
+    // Find and delete the EventParticipation record
+    const participation = await prisma.eventParticipation.findUnique({
+      where: {
+        event_id_profile_id: {
+          event_id: eventId,
+          profile_id: profileId,
+        },
+      },
+    });
+
+    if (!participation) {
+      return { success: false, error: 'הכרטיס אינו משתתף באירוע זה' };
+    }
+
+    await prisma.eventParticipation.delete({
+      where: { id: participation.id },
+    });
+
+    // Delete any interest requests involving this profile in this event (both sent and received)
+    await prisma.interestRequest.deleteMany({
+      where: {
+        event_id: eventId,
+        OR: [
+          { requesting_profile_id: profileId },
+          { target_profile_id: profileId },
+        ],
+      },
+    });
+
+    revalidatePath(`/events/${eventId}`);
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error('leaveEvent error:', error);
+    return { success: false, error: 'שגיאה בעזיבת האירוע' };
+  }
+}
+
+// ─── Remove Participant (for organizer) ─────────────────────────────────────
+
+export async function removeParticipant(
+  eventId: string,
+  profileId: string
+): Promise<ActionResponse<null>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי להסיר משתתף' };
+    }
+
+    // Verify the current user is the event organizer
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { organizer_id: true },
+    });
+
+    if (!event) {
+      return { success: false, error: 'האירוע לא נמצא' };
+    }
+
+    if (event.organizer_id !== user.id) {
+      return { success: false, error: 'רק מארגן האירוע יכול להסיר משתתפים' };
+    }
+
+    // Find and delete the EventParticipation record
+    const participation = await prisma.eventParticipation.findUnique({
+      where: {
+        event_id_profile_id: {
+          event_id: eventId,
+          profile_id: profileId,
+        },
+      },
+    });
+
+    if (!participation) {
+      return { success: false, error: 'המשתתף לא נמצא באירוע זה' };
+    }
+
+    await prisma.eventParticipation.delete({
+      where: { id: participation.id },
+    });
+
+    // Delete any interest requests involving this profile in this event (both sent and received)
+    await prisma.interestRequest.deleteMany({
+      where: {
+        event_id: eventId,
+        OR: [
+          { requesting_profile_id: profileId },
+          { target_profile_id: profileId },
+        ],
+      },
+    });
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error('removeParticipant error:', error);
+    return { success: false, error: 'שגיאה בהסרת המשתתף מהאירוע' };
   }
 }

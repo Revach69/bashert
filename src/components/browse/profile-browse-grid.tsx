@@ -18,6 +18,11 @@ import { InterestButton } from "@/components/browse/interest-button"
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
+type UserProfileOption = {
+  value: string
+  label: string
+}
+
 type ProfileBrowseGridProps = {
   profiles: EventBrowseProfile[]
   eventId: string
@@ -25,6 +30,8 @@ type ProfileBrowseGridProps = {
   userProfileIds: string[]
   /** Profile IDs the user has already sent interest requests to */
   sentInterestProfileIds?: string[]
+  /** Named options for the profile selector (when user has multiple profiles) */
+  userProfileOptions?: UserProfileOption[]
 }
 
 // ─── Single browse card ─────────────────────────────────────────────────────────
@@ -34,11 +41,13 @@ function ProfileBrowseCard({
   eventId,
   userProfileIds,
   alreadySent,
+  userProfileOptions,
 }: {
   profile: EventBrowseProfile
   eventId: string
   userProfileIds: string[]
   alreadySent: boolean
+  userProfileOptions?: UserProfileOption[]
 }) {
   const [selectedProfileId, setSelectedProfileId] = React.useState(
     userProfileIds[0] ?? ""
@@ -52,10 +61,10 @@ function ProfileBrowseCard({
     (profile.subject_last_name?.[0] ?? "")
 
   const profileOptions = userProfileIds.length > 1
-    ? userProfileIds.map((id, index) => ({
-        id,
+    ? (userProfileOptions ?? userProfileIds.map((id, index) => ({
+        value: id,
         label: `פרופיל ${index + 1}`,
-      }))
+      }))).map((opt) => ({ id: opt.value, label: opt.label }))
     : undefined
 
   return (
@@ -132,6 +141,7 @@ export function ProfileBrowseGrid({
   eventId,
   userProfileIds,
   sentInterestProfileIds = [],
+  userProfileOptions,
 }: ProfileBrowseGridProps) {
   if (profiles.length === 0) {
     return (
@@ -154,6 +164,7 @@ export function ProfileBrowseGrid({
           eventId={eventId}
           userProfileIds={userProfileIds}
           alreadySent={sentInterestProfileIds.includes(profile.id)}
+          userProfileOptions={userProfileOptions}
         />
       ))}
     </div>

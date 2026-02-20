@@ -93,6 +93,7 @@ model Event {
   matchmaker_id     String?  @db.Uuid
   name              String
   description       String?
+  location          String?
   event_date        DateTime @db.Date
   start_time        DateTime
   end_time          DateTime

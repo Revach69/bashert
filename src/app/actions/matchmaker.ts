@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { updateInterestStatusSchema } from '@/lib/validations/interest';
 import { sendStatusChangeNotification, sendApprovalToTarget } from '@/lib/email';
 import type { ActionResponse, EventWithDetails, InterestRequestWithProfiles } from '@/types';
 import type { InterestRequest, RequestStatus } from '@prisma/client';
@@ -168,18 +169,23 @@ export async function updateRequestStatus(
       return { success: false, error: 'אין הרשאה לעדכן בקשה זו' };
     }
 
-    // Validate status value
-    const validStatuses: RequestStatus[] = ['pending', 'reviewed', 'approved', 'rejected', 'archived'];
-    if (!validStatuses.includes(status)) {
-      return { success: false, error: 'סטטוס לא תקין' };
+    // Validate input with Zod schema
+    const parsed = updateInterestStatusSchema.safeParse({
+      id: requestId,
+      status,
+      notes,
+    });
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
     }
 
     // Build update data
     const updateData: { status: RequestStatus; matchmaker_notes?: string } = {
-      status,
+      status: parsed.data.status,
     };
-    if (notes !== undefined) {
-      updateData.matchmaker_notes = notes;
+    if (parsed.data.notes !== undefined) {
+      updateData.matchmaker_notes = parsed.data.notes;
     }
 
     const updatedRequest = await prisma.interestRequest.update({

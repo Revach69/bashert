@@ -312,6 +312,53 @@ export async function getInterestRequestsForEvent(
   }
 }
 
+// ─── Cancel Interest Request ─────────────────────────────────────────────────
+
+export async function cancelInterestRequest(
+  requestId: string
+): Promise<ActionResponse<null>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי לבטל בקשת עניין' };
+    }
+
+    // Find the interest request and verify ownership
+    const request = await prisma.interestRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        requesting_profile: {
+          select: { creator_id: true },
+        },
+      },
+    });
+
+    if (!request) {
+      return { success: false, error: 'בקשת העניין לא נמצאה' };
+    }
+
+    // Verify the requester (requesting profile's creator) is the current user
+    if (request.requesting_profile.creator_id !== user.id) {
+      return { success: false, error: 'אין הרשאה לבטל בקשה זו' };
+    }
+
+    // Only allow cancellation if status is still pending
+    if (request.status !== 'pending') {
+      return { success: false, error: 'ניתן לבטל רק בקשות שטרם טופלו' };
+    }
+
+    // Hard delete since the request was never acted on
+    await prisma.interestRequest.delete({
+      where: { id: requestId },
+    });
+
+    return { success: true, data: null };
+  } catch (error) {
+    console.error('cancelInterestRequest error:', error);
+    return { success: false, error: 'שגיאה בביטול בקשת העניין' };
+  }
+}
+
 // ─── Get Incoming Interest Requests (for shadchan view) ──────────────────────
 
 export async function getIncomingInterestRequests(
