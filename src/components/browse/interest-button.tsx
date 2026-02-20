@@ -4,6 +4,7 @@ import * as React from "react"
 import { Heart, Loader2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { createInterestRequest } from "@/app/actions/interest"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -58,17 +59,12 @@ export function InterestButton({
     setSuccess(false)
 
     try {
-      // Placeholder - wire to server action:
-      // import { createInterestRequest } from "@/app/actions/interest"
-      // const result = await createInterestRequest({
-      //   event_id: eventId,
-      //   requesting_profile_id: requestingProfileId,
-      //   target_profile_id: targetProfileId,
-      // })
-      // if (!result.success) throw new Error(result.error)
-
-      // Simulate network delay for development
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      const result = await createInterestRequest(
+        eventId,
+        requestingProfileId,
+        targetProfileId,
+      )
+      if (!result.success) throw new Error(result.error)
 
       setIsSent(true)
       setSuccess(true)

@@ -4,6 +4,7 @@ import * as React from "react"
 import type { ProfileCard } from "@prisma/client"
 import { UserCircle } from "lucide-react"
 
+import { deleteProfile as deleteProfileAction } from "@/app/actions/profile"
 import {
   Card,
   CardContent,
@@ -19,15 +20,6 @@ type ProfileListProps = {
   profiles: ProfileCard[]
 }
 
-// ─── Placeholder delete action (will be wired to server actions) ────────────
-
-async function deleteProfile(
-  _id: string
-): Promise<{ success: boolean; error?: string }> {
-  // Placeholder - will be wired to server actions from @/app/actions/profile
-  return { success: true }
-}
-
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function ProfileList({ profiles: initialProfiles }: ProfileListProps) {
@@ -35,7 +27,7 @@ export function ProfileList({ profiles: initialProfiles }: ProfileListProps) {
     React.useState<ProfileCard[]>(initialProfiles)
 
   async function handleDelete(id: string) {
-    const result = await deleteProfile(id)
+    const result = await deleteProfileAction(id)
     if (result.success) {
       setProfiles((prev) => prev.filter((p) => p.id !== id))
     }

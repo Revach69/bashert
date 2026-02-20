@@ -4,6 +4,7 @@ import * as React from "react"
 import type { ProfileCard } from "@prisma/client"
 import { Loader2 } from "lucide-react"
 
+import { createProfile, updateProfile } from "@/app/actions/profile"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,15 +22,6 @@ import {
 type ProfileFormProps = {
   initialData?: Partial<ProfileCard>
   onSuccess?: () => void
-}
-
-// ─── Placeholder action (will be replaced by server actions) ────────────────
-
-async function submitProfileForm(
-  _formData: FormData
-): Promise<{ success: boolean; error?: string }> {
-  // Placeholder - will be wired to server actions from @/app/actions/profile
-  return { success: true }
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
@@ -54,7 +46,9 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
         formData.set("id", initialData.id)
       }
 
-      const result = await submitProfileForm(formData)
+      const result = initialData?.id
+        ? await updateProfile(formData)
+        : await createProfile(formData)
 
       if (result.success) {
         onSuccess?.()

@@ -1,23 +1,17 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Loader2, Search } from "lucide-react"
 
+import { getEventByJoinCode } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-// ─── Placeholder action (will be replaced by server actions) ────────────────
-
-async function joinEvent(
-  _code: string
-): Promise<{ success: boolean; error?: string }> {
-  // Placeholder - will be wired to server actions from @/app/actions/event
-  return { success: true }
-}
 
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function JoinEventForm() {
+  const router = useRouter()
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState(false)
@@ -32,11 +26,13 @@ export function JoinEventForm() {
     setSuccess(false)
 
     try {
-      const result = await joinEvent(code.trim().toUpperCase())
+      const result = await getEventByJoinCode(code.trim().toUpperCase())
 
       if (result.success) {
         setSuccess(true)
         setCode("")
+        // Navigate to the event detail page
+        router.push(`/event/${result.data.id}`)
       } else {
         setError(result.error ?? "קוד האירוע לא נמצא. בדקו את הקוד ונסו שוב.")
       }

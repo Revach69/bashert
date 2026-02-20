@@ -103,6 +103,33 @@ export async function createEvent(
   }
 }
 
+// ─── Get Event By ID ─────────────────────────────────────────────────────
+
+export async function getEventById(
+  eventId: string
+): Promise<ActionResponse<EventWithDetails>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי לצפות באירוע' };
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: eventWithDetailsInclude,
+    });
+
+    if (!event) {
+      return { success: false, error: 'האירוע לא נמצא' };
+    }
+
+    return { success: true, data: event };
+  } catch (error) {
+    console.error('getEventById error:', error);
+    return { success: false, error: 'שגיאה בטעינת האירוע' };
+  }
+}
+
 // ─── Get My Events ──────────────────────────────────────────────────────────
 
 export async function getMyEvents(): Promise<

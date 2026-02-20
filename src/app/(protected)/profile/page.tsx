@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { getMyProfiles } from "@/app/actions/profile"
 import { CreateProfileDialog } from "@/components/profiles/create-profile-dialog"
 import { ProfileList } from "@/components/profiles/profile-list"
 
@@ -10,20 +11,11 @@ export const metadata: Metadata = {
   description: "ניהול כרטיסי הפרופיל שלכם",
 }
 
-// ─── Data fetching placeholder ──────────────────────────────────────────────────
-
-async function getProfiles() {
-  // Placeholder - will call server action / prisma query
-  // import { getMyProfiles } from "@/app/actions/profile"
-  // const result = await getMyProfiles()
-  // return result.success ? result.data : []
-  return []
-}
-
 // ─── Page Component (Server Component) ──────────────────────────────────────────
 
 export default async function ProfilePage() {
-  const profiles = await getProfiles()
+  const result = await getMyProfiles()
+  const profiles = result.success ? result.data : []
 
   return (
     <div className="container mx-auto px-4 py-8">

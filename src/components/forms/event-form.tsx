@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Loader2 } from "lucide-react"
 
+import { createEvent } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,15 +13,6 @@ import { Textarea } from "@/components/ui/textarea"
 
 type EventFormProps = {
   onSuccess?: () => void
-}
-
-// ─── Placeholder action (will be replaced by server actions) ────────────────
-
-async function submitEventForm(
-  _formData: FormData
-): Promise<{ success: boolean; error?: string }> {
-  // Placeholder - will be wired to server actions from @/app/actions/event
-  return { success: true }
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
@@ -36,7 +28,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
 
     try {
       const formData = new FormData(event.currentTarget)
-      const result = await submitEventForm(formData)
+      const result = await createEvent(formData)
 
       if (result.success) {
         onSuccess?.()

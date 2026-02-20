@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import { MessageSquare, Heart, CheckCircle, Clock } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

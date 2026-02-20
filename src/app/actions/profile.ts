@@ -226,6 +226,33 @@ export async function getMyProfiles(): Promise<
   }
 }
 
+// ─── Get My Profile IDs ─────────────────────────────────────────────────
+
+export async function getMyProfileIds(): Promise<
+  ActionResponse<string[]>
+> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי לצפות בכרטיסים' };
+    }
+
+    const profiles = await prisma.profileCard.findMany({
+      where: {
+        creator_id: user.id,
+        is_active: true,
+      },
+      select: { id: true },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return { success: true, data: profiles.map((p) => p.id) };
+  } catch (error) {
+    console.error('getMyProfileIds error:', error);
+    return { success: false, error: 'שגיאה בטעינת מזהי הכרטיסים' };
+  }
+}
+
 // ─── Get Profile By ID ──────────────────────────────────────────────────────
 
 export async function getProfileById(

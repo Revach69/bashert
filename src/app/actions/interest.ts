@@ -215,6 +215,35 @@ export async function createInterestRequest(
   }
 }
 
+// ─── Get Sent Interest Target IDs ────────────────────────────────────────────
+
+export async function getSentInterestTargetIds(
+  eventId: string
+): Promise<ActionResponse<string[]>> {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: 'יש להתחבר כדי לצפות בבקשות עניין' };
+    }
+
+    const requests = await prisma.interestRequest.findMany({
+      where: {
+        event_id: eventId,
+        requested_by: user.id,
+      },
+      select: { target_profile_id: true },
+    });
+
+    return {
+      success: true,
+      data: requests.map((r) => r.target_profile_id),
+    };
+  } catch (error) {
+    console.error('getSentInterestTargetIds error:', error);
+    return { success: false, error: 'שגיאה בטעינת מזהי היעדים' };
+  }
+}
+
 // ─── Get Interest Requests For Event (sent by current user) ──────────────────
 
 export async function getInterestRequestsForEvent(

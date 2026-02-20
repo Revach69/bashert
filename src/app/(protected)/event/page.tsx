@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 
+import { getMyEvents } from "@/app/actions/event"
 import {
   Card,
   CardContent,
@@ -19,20 +20,11 @@ export const metadata: Metadata = {
   description: "ניהול אירועים והצטרפות לאירועים חדשים",
 }
 
-// ─── Data fetching placeholder ──────────────────────────────────────────────────
-
-async function getMyEvents() {
-  // Placeholder - will call server action / prisma query
-  // import { getMyEvents } from "@/app/actions/event"
-  // const result = await getMyEvents()
-  // return result.success ? result.data : []
-  return []
-}
-
 // ─── Page Component (Server Component) ──────────────────────────────────────────
 
 export default async function EventPage() {
-  const events = await getMyEvents()
+  const result = await getMyEvents()
+  const events = result.success ? result.data : []
 
   return (
     <div className="container mx-auto px-4 py-8">

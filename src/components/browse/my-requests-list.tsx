@@ -1,6 +1,3 @@
-"use client"
-
-import * as React from "react"
 import { Heart, Inbox, User as UserIcon } from "lucide-react"
 
 import type { InterestRequestWithProfiles } from "@/types"
