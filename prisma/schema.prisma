@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  creator
+  matchmaker
+  organizer
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum VerificationStatus {
+  unverified
+  pending
+  verified
+}
+
+enum RequestStatus {
+  pending
+  reviewed
+  approved
+  rejected
+  archived
+}
+
+// ─── Tables (PRD Section 4 – V1 Data Model) ────────────────────────────────
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  email      String   @unique
+  full_name  String
+  phone      String?
+  roles      Role[]   @default([creator])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  profile_cards          ProfileCard[]
+  organized_events       Event[]              @relation("organizer")
+  matchmaker_events      Event[]              @relation("matchmaker")
+  event_participations   EventParticipation[]
+  sent_interest_requests InterestRequest[]    @relation("requester")
+
+  @@map("users")
+}
+
+model ProfileCard {
+  id                  String             @id @default(uuid()) @db.Uuid
+  creator_id          String             @db.Uuid
+  subject_first_name  String
+  subject_last_name   String
+  subject_email       String?
+  subject_phone       String?
+  gender              Gender
+  date_of_birth       DateTime           @db.Date
+  photo_url           String?
+  height              String?
+  occupation          String?
+  education           String?
+  ethnicity           String?
+  family_background   String?
+  hashkafa            String?
+  additional_info     String?
+  verification_status VerificationStatus @default(unverified)
+  is_active           Boolean            @default(true)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+
+  // Relations
+  creator              User                @relation(fields: [creator_id], references: [id], onDelete: Cascade)
+  event_participations EventParticipation[]
+  requesting_interests InterestRequest[]   @relation("requesting_profile")
+  target_interests     InterestRequest[]   @relation("target_profile")
+
+  @@index([creator_id])
+  @@index([gender, is_active])
+  @@map("profile_cards")
+}
+
+model Event {
+  id                String   @id @default(uuid()) @db.Uuid
+  organizer_id      String   @db.Uuid
+  matchmaker_id     String?  @db.Uuid
+  name              String
+  description       String?
+  event_date        DateTime @db.Date
+  start_time        DateTime
+  end_time          DateTime
+  pre_access_hours  Int      @default(0)
+  post_access_hours Int      @default(0)
+  join_code         String   @unique
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  organizer         User                @relation("organizer", fields: [organizer_id], references: [id])
+  matchmaker        User?               @relation("matchmaker", fields: [matchmaker_id], references: [id])
+  participations    EventParticipation[]
+  interest_requests InterestRequest[]
+
+  @@index([organizer_id])
+  @@index([matchmaker_id])
+  @@index([join_code])
+  @@map("events")
+}
+
+model EventParticipation {
+  id          String   @id @default(uuid()) @db.Uuid
+  event_id    String   @db.Uuid
+  profile_id  String   @db.Uuid
+  opted_in_by String   @db.Uuid
+  opted_in_at DateTime @default(now())
+
+  // Relations
+  event   Event       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  profile ProfileCard @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [opted_in_by], references: [id])
+
+  @@unique([event_id, profile_id])
+  @@index([event_id])
+  @@index([profile_id])
+  @@map("event_participations")
+}
+
+model InterestRequest {
+  id                    String        @id @default(uuid()) @db.Uuid
+  event_id              String        @db.Uuid
+  requesting_profile_id String        @db.Uuid
+  target_profile_id     String        @db.Uuid
+  requested_by          String        @db.Uuid
+  status                RequestStatus @default(pending)
+  matchmaker_notes      String?
+  is_mutual             Boolean       @default(false)
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
+
+  // Relations
+  event              Event       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  requesting_profile ProfileCard @relation("requesting_profile", fields: [requesting_profile_id], references: [id])
+  target_profile     ProfileCard @relation("target_profile", fields: [target_profile_id], references: [id])
+  requester          User        @relation("requester", fields: [requested_by], references: [id])
+
+  @@unique([event_id, requesting_profile_id, target_profile_id])
+  @@index([event_id])
+  @@index([requesting_profile_id])
+  @@index([target_profile_id])
+  @@index([status])
+  @@map("interest_requests")
+}
