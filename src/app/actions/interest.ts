@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { createInterestSchema } from '@/lib/validations/interest';
 import { canSubmitRequests } from '@/lib/utils';
+import { sendInterestConfirmation, sendNewRequestToShadchan } from '@/lib/email';
 import type { ActionResponse, InterestRequestWithProfiles } from '@/types';
 import type { InterestRequest } from '@prisma/client';
 
@@ -151,6 +152,60 @@ export async function createInterestRequest(
         where: { id: reverseRequest.id },
         data: { is_mutual: true },
       });
+    }
+
+    // Send email notifications (non-blocking)
+    try {
+      // Fetch names and event details for notification emails
+      const [reqProfile, tgtProfile, eventDetails] = await Promise.all([
+        prisma.profileCard.findUnique({
+          where: { id: requestingProfileId },
+          select: { subject_first_name: true, subject_last_name: true },
+        }),
+        prisma.profileCard.findUnique({
+          where: { id: targetProfileId },
+          select: { subject_first_name: true, subject_last_name: true },
+        }),
+        prisma.event.findUnique({
+          where: { id: eventId },
+          select: {
+            name: true,
+            matchmaker_id: true,
+            matchmaker: { select: { email: true, full_name: true } },
+          },
+        }),
+      ]);
+
+      if (reqProfile && tgtProfile && eventDetails) {
+        const requesterName = `${reqProfile.subject_first_name} ${reqProfile.subject_last_name}`;
+        const targetName = `${tgtProfile.subject_first_name} ${tgtProfile.subject_last_name}`;
+
+        // Send confirmation to the creator who submitted the request
+        sendInterestConfirmation(
+          user.email,
+          requesterName,
+          targetName,
+          eventDetails.name
+        ).catch((err) => {
+          console.error('Failed to send interest confirmation email:', err);
+        });
+
+        // Notify the shadchan if one is assigned
+        if (eventDetails.matchmaker) {
+          sendNewRequestToShadchan(
+            eventDetails.matchmaker.email,
+            eventDetails.matchmaker.full_name,
+            requesterName,
+            targetName,
+            eventDetails.name
+          ).catch((err) => {
+            console.error('Failed to send shadchan notification email:', err);
+          });
+        }
+      }
+    } catch (emailError) {
+      // Email failures should not affect the main action
+      console.error('Error preparing notification emails:', emailError);
     }
 
     return { success: true, data: interestRequest };

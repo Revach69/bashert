@@ -12,12 +12,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { LogoutButton } from "@/components/layout/logout-button";
 
 interface MobileNavProps {
   isAuthenticated: boolean;
+  isMatchmaker?: boolean;
+  isOrganizer?: boolean;
 }
 
-export function MobileNav({ isAuthenticated }: MobileNavProps) {
+export function MobileNav({
+  isAuthenticated,
+  isMatchmaker = false,
+  isOrganizer = false,
+}: MobileNavProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -38,7 +45,6 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
         <nav className="flex flex-col gap-2 px-4">
           {isAuthenticated ? (
             <>
-              {/* TODO: Show role-based navigation links */}
               <Link
                 href="/dashboard"
                 onClick={() => setOpen(false)}
@@ -53,17 +59,37 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
               >
                 פרופילים
               </Link>
+              <Link
+                href="/event"
+                onClick={() => setOpen(false)}
+                className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+              >
+                אירועים
+              </Link>
+              {isMatchmaker && (
+                <Link
+                  href="/matchmaker"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                >
+                  שדכן
+                </Link>
+              )}
+              {isOrganizer && (
+                <Link
+                  href="/organizer"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
+                >
+                  מארגן
+                </Link>
+              )}
               <Separator />
-              <Button
+              <LogoutButton
                 variant="ghost"
                 className="justify-start"
-                onClick={() => {
-                  // TODO: Implement logout
-                  setOpen(false);
-                }}
-              >
-                יציאה
-              </Button>
+                onLogout={() => setOpen(false)}
+              />
             </>
           ) : (
             <>
