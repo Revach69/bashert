@@ -71,7 +71,7 @@ export function JoinEventForm() {
 
       {success && (
         <p className="text-sm text-green-600 dark:text-green-400">
-          הצטרפתם לאירוע בהצלחה!
+          האירוע נמצא! מעבירים אתכם לדף האירוע לשיוך פרופיל...
         </p>
       )}
     </form>

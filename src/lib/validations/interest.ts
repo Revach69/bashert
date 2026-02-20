@@ -11,7 +11,8 @@ export type CreateInterestInput = z.infer<typeof createInterestSchema>;
 export const updateInterestStatusSchema = z.object({
   id: z.string().uuid(),
   status: z.enum(['pending', 'reviewed', 'approved', 'rejected', 'archived']),
-  matchmaker_notes: z.string().optional(),
+  matchmaker_notes: z.string().max(5000).optional(),
+  notes: z.string().max(5000).optional(),
 });
 
 export type UpdateInterestStatusInput = z.infer<typeof updateInterestStatusSchema>;

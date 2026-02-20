@@ -1,5 +1,16 @@
 import { Resend } from 'resend';
 
+// ─── HTML Escape Helper ────────────────────────────────────────────────────
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // ─── Resend Client ──────────────────────────────────────────────────────────
 
 const resendApiKey = process.env.RESEND_API_KEY;
@@ -122,9 +133,9 @@ export async function sendInterestConfirmation(
   const html = wrapHtml(`
     <p>שלום,</p>
     <p>
-      בקשת העניין של <span class="highlight">${requesterName}</span>
-      כלפי <span class="highlight">${targetName}</span>
-      באירוע <span class="highlight">${eventName}</span>
+      בקשת העניין של <span class="highlight">${escapeHtml(requesterName)}</span>
+      כלפי <span class="highlight">${escapeHtml(targetName)}</span>
+      באירוע <span class="highlight">${escapeHtml(eventName)}</span>
       התקבלה בהצלחה.
     </p>
     <p>השדכן/ית המוקצה לאירוע יבדוק/תבדוק את הבקשה ויעדכן אותך בהמשך.</p>
@@ -133,7 +144,7 @@ export async function sendInterestConfirmation(
 
   await sendEmail({
     to,
-    subject: `בשערט - בקשת עניין נשלחה בהצלחה (${eventName})`,
+    subject: `בשערט - בקשת עניין נשלחה בהצלחה (${escapeHtml(eventName)})`,
     html,
   });
 }
@@ -148,20 +159,47 @@ export async function sendNewRequestToShadchan(
   eventName: string
 ): Promise<void> {
   const html = wrapHtml(`
-    <p>שלום ${shadchanName},</p>
+    <p>שלום ${escapeHtml(shadchanName)},</p>
     <p>
-      התקבלה בקשת עניין חדשה באירוע <span class="highlight">${eventName}</span>:
+      התקבלה בקשת עניין חדשה באירוע <span class="highlight">${escapeHtml(eventName)}</span>:
     </p>
     <p>
-      <span class="highlight">${requesterName}</span>
-      מעוניין/ת ב-<span class="highlight">${targetName}</span>
+      <span class="highlight">${escapeHtml(requesterName)}</span>
+      מעוניין/ת ב-<span class="highlight">${escapeHtml(targetName)}</span>
     </p>
     <p>היכנס/י ללוח הבקרה של השדכן כדי לבדוק ולעדכן את הבקשה.</p>
   `);
 
   await sendEmail({
     to,
-    subject: `בשערט - בקשת עניין חדשה באירוע ${eventName}`,
+    subject: `בשערט - בקשת עניין חדשה באירוע ${escapeHtml(eventName)}`,
+    html,
+  });
+}
+
+// ─── Approval Notification to Target (to target profile's creator) ──────────
+
+export async function sendApprovalToTarget(
+  to: string,
+  targetUserName: string,
+  requesterName: string,
+  eventName: string
+): Promise<void> {
+  const html = wrapHtml(`
+    <p>שלום ${escapeHtml(targetUserName)},</p>
+    <p>בשורות טובות! בקשת העניין כלפיכם אושרה.</p>
+    <p>
+      <span class="highlight">${escapeHtml(requesterName)}</span>
+      הביע/ה עניין כלפיכם באירוע <span class="highlight">${escapeHtml(eventName)}</span>
+      והבקשה אושרה על ידי השדכן/ית.
+    </p>
+    <p>היכנס/י למערכת לפרטים נוספים.</p>
+    <p>בהצלחה!</p>
+  `);
+
+  await sendEmail({
+    to,
+    subject: `בשערט - בקשת עניין כלפיכם אושרה (${escapeHtml(eventName)})`,
     html,
   });
 }
@@ -186,18 +224,18 @@ export async function sendStatusChangeNotification(
   const statusLabel = statusLabels[newStatus] || newStatus;
 
   const html = wrapHtml(`
-    <p>שלום ${userName},</p>
+    <p>שלום ${escapeHtml(userName)},</p>
     <p>
-      סטטוס בקשת העניין שלך כלפי <span class="highlight">${targetName}</span>
-      באירוע <span class="highlight">${eventName}</span>
-      עודכן ל: <span class="highlight">${statusLabel}</span>
+      סטטוס בקשת העניין שלך כלפי <span class="highlight">${escapeHtml(targetName)}</span>
+      באירוע <span class="highlight">${escapeHtml(eventName)}</span>
+      עודכן ל: <span class="highlight">${escapeHtml(statusLabel)}</span>
     </p>
     <p>היכנס/י למערכת לפרטים נוספים.</p>
   `);
 
   await sendEmail({
     to,
-    subject: `בשערט - עדכון סטטוס בקשת עניין (${eventName})`,
+    subject: `בשערט - עדכון סטטוס בקשת עניין (${escapeHtml(eventName)})`,
     html,
   });
 }

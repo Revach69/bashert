@@ -2,20 +2,29 @@ import { createSupabaseServerClient } from './supabase/server';
 import { prisma } from './prisma';
 
 /**
- * Get the current Supabase auth session.
- * Returns null if the user is not authenticated.
+ * Get the currently authenticated Supabase user.
+ * Uses supabase.auth.getUser() which validates the JWT against the
+ * Supabase auth server, unlike getSession() which only reads the JWT
+ * without validation.
+ *
+ * Returns a session-like object { user } for backward compatibility,
+ * or null if the user is not authenticated.
  */
 export async function getSession() {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session;
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) return null;
+
+  return { user };
 }
 
 /**
  * Get the currently authenticated user from the database.
- * Combines Supabase Auth (session) with Prisma (user record).
+ * Combines Supabase Auth (validated user) with Prisma (user record).
  * Returns null if not authenticated or if no matching DB user exists.
  */
 export async function getCurrentUser() {

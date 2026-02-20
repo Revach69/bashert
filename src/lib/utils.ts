@@ -23,13 +23,11 @@ export function calculateAge(dateOfBirth: Date): number {
 // ─── Generate unique join code ─────────────────────────────────────────────────
 // 6 alphanumeric characters, uppercase, no ambiguous chars (I, O, 0, 1)
 
-export function generateJoinCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+export function generateJoinCode(length: number = 6): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ234679';
+  const randomValues = new Uint32Array(length);
+  crypto.getRandomValues(randomValues);
+  return Array.from(randomValues, (v) => chars[v % chars.length]).join('');
 }
 
 // ─── Check if event is within access window ────────────────────────────────────

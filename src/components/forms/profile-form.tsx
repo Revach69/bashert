@@ -211,6 +211,21 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
         />
       </div>
 
+      {/* Photo URL */}
+      <div className="grid gap-2">
+        <Label htmlFor="photo_url">קישור לתמונה (אופציונלי)</Label>
+        <Input
+          id="photo_url"
+          name="photo_url"
+          type="url"
+          dir="ltr"
+          className="text-start"
+          defaultValue={initialData?.photo_url ?? ""}
+          placeholder="https://example.com/photo.jpg"
+        />
+        <p className="text-sm text-muted-foreground">הזינו קישור לתמונת פרופיל</p>
+      </div>
+
       {/* Family background */}
       <div className="grid gap-2">
         <Label htmlFor="family_background">רקע משפחתי</Label>

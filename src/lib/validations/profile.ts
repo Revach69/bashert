@@ -6,9 +6,10 @@ export const createProfileSchema = z.object({
   subject_email: z
     .string()
     .email('כתובת אימייל לא תקינה')
+    .max(254)
     .optional()
     .or(z.literal('')),
-  subject_phone: z.string().optional().or(z.literal('')),
+  subject_phone: z.string().max(20).optional().or(z.literal('')),
   gender: z.enum(['male', 'female'], { error: 'נא לבחור מין' }),
   date_of_birth: z.coerce.date().refine(
     (date) => {
@@ -19,14 +20,14 @@ export const createProfileSchema = z.object({
     },
     'הגיל המינימלי הוא 18'
   ),
-  photo_url: z.string().url().optional().or(z.literal('')),
-  height: z.string().optional().or(z.literal('')),
-  occupation: z.string().optional().or(z.literal('')),
-  education: z.string().optional().or(z.literal('')),
-  ethnicity: z.string().optional().or(z.literal('')),
-  family_background: z.string().optional().or(z.literal('')),
-  hashkafa: z.string().optional().or(z.literal('')),
-  additional_info: z.string().optional().or(z.literal('')),
+  photo_url: z.string().url().max(2000).optional().or(z.literal('')),
+  height: z.string().max(20).optional().or(z.literal('')),
+  occupation: z.string().max(100).optional().or(z.literal('')),
+  education: z.string().max(200).optional().or(z.literal('')),
+  ethnicity: z.string().max(100).optional().or(z.literal('')),
+  family_background: z.string().max(2000).optional().or(z.literal('')),
+  hashkafa: z.string().max(100).optional().or(z.literal('')),
+  additional_info: z.string().max(2000).optional().or(z.literal('')),
 });
 
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;

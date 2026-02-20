@@ -52,6 +52,8 @@ export async function getEventBrowseProfiles(
       select: {
         id: true,
         is_active: true,
+        organizer_id: true,
+        matchmaker_id: true,
         start_time: true,
         end_time: true,
         pre_access_hours: true,
@@ -70,6 +72,24 @@ export async function getEventBrowseProfiles(
     // Check that the event is within its access window
     if (!isEventAccessible(event)) {
       return { success: false, error: 'האירוע אינו בחלון הגישה הפעיל' };
+    }
+
+    // Authorization: user must be organizer, matchmaker, or have a profile in this event
+    const isOrganizer = event.organizer_id === user.id;
+    const isMatchmaker = event.matchmaker_id === user.id;
+
+    if (!isOrganizer && !isMatchmaker) {
+      const userParticipation = await prisma.eventParticipation.findFirst({
+        where: {
+          event_id: eventId,
+          profile: { creator_id: user.id },
+        },
+        select: { id: true },
+      });
+
+      if (!userParticipation) {
+        return { success: false, error: 'אין הרשאה לעיין בפרופילים באירוע זה' };
+      }
     }
 
     // Get the current user's profile IDs so we can exclude them

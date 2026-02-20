@@ -7,7 +7,6 @@ import { Heart, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -18,25 +17,6 @@ import {
 } from "@/components/ui/card";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { registerSchema } from "@/lib/validations/auth";
-import type { UserRole } from "@/types";
-
-const ROLE_LABELS: Record<
-  UserRole,
-  { label: string; description: string }
-> = {
-  creator: {
-    label: "יוצר/ת פרופיל",
-    description: "יצירת כרטיסי פרופיל עבורכם או עבור בני משפחה",
-  },
-  matchmaker: {
-    label: "שדכן/ית",
-    description: "ניהול בקשות עניין וליווי תהליכי שידוך",
-  },
-  organizer: {
-    label: "מארגן/ת",
-    description: "יצירת אירועים והזמנת משתתפים",
-  },
-};
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,16 +25,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedRoles, setSelectedRoles] = useState<UserRole[]>(["creator"]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  function toggleRole(role: UserRole) {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,7 +39,6 @@ export default function RegisterPage() {
       email,
       password,
       phone: phone || undefined,
-      roles: selectedRoles,
     });
 
     if (!result.success) {
@@ -78,6 +50,8 @@ export default function RegisterPage() {
 
     try {
       const supabase = createSupabaseBrowserClient();
+      // SECURITY: Do NOT send roles in metadata. Roles are always
+      // assigned server-side as 'creator' in syncUserAfterAuth().
       const { error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -85,7 +59,6 @@ export default function RegisterPage() {
           data: {
             full_name: fullName,
             phone: phone || null,
-            roles: selectedRoles,
           },
         },
       });
@@ -237,40 +210,6 @@ export default function RegisterPage() {
                   disabled={isLoading}
                   autoComplete="tel"
                 />
-              </div>
-
-              {/* Role Selection */}
-              <div className="flex flex-col gap-3">
-                <Label>תפקידים</Label>
-                <p className="text-xs text-muted-foreground">
-                  ניתן לבחור יותר מתפקיד אחד
-                </p>
-                <div className="flex flex-col gap-3">
-                  {(
-                    Object.entries(ROLE_LABELS) as [
-                      UserRole,
-                      (typeof ROLE_LABELS)[UserRole],
-                    ][]
-                  ).map(([role, { label, description }]) => (
-                    <label
-                      key={role}
-                      className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary/5"
-                    >
-                      <Checkbox
-                        checked={selectedRoles.includes(role)}
-                        onCheckedChange={() => toggleRole(role)}
-                        disabled={isLoading}
-                        className="mt-0.5"
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-sm font-medium">{label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {description}
-                        </span>
-                      </div>
-                    </label>
-                  ))}
-                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

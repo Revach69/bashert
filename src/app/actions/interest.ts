@@ -107,6 +107,36 @@ export async function createInterestRequest(
       return { success: false, error: 'חלון הזמן להגשת בקשות עניין הסתיים' };
     }
 
+    // Verify both profiles are opted into this event
+    const [requestingParticipation, targetParticipation] = await Promise.all([
+      prisma.eventParticipation.findUnique({
+        where: {
+          event_id_profile_id: {
+            event_id: eventId,
+            profile_id: requestingProfileId,
+          },
+        },
+        select: { id: true },
+      }),
+      prisma.eventParticipation.findUnique({
+        where: {
+          event_id_profile_id: {
+            event_id: eventId,
+            profile_id: targetProfileId,
+          },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!requestingParticipation) {
+      return { success: false, error: 'הכרטיס המבקש אינו משתתף באירוע זה' };
+    }
+
+    if (!targetParticipation) {
+      return { success: false, error: 'כרטיס היעד אינו משתתף באירוע זה' };
+    }
+
     // Prevent duplicate request (same event + requester + target)
     const existingRequest = await prisma.interestRequest.findUnique({
       where: {

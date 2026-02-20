@@ -36,17 +36,10 @@ export async function syncUserAfterAuth(): Promise<ActionResponse<User>> {
       '';
     const phone = (metadata.phone as string) || null;
 
-    // Parse roles from metadata, default to ['creator']
-    let roles: Role[] = ['creator'];
-    if (Array.isArray(metadata.roles)) {
-      const validRoles: Role[] = ['creator', 'matchmaker', 'organizer'];
-      const parsedRoles = (metadata.roles as string[]).filter((r): r is Role =>
-        validRoles.includes(r as Role)
-      );
-      if (parsedRoles.length > 0) {
-        roles = parsedRoles;
-      }
-    }
+    // SECURITY: Always assign 'creator' role to new users.
+    // Roles from user_metadata are IGNORED to prevent privilege escalation.
+    // Role elevation should only be performed by an admin.
+    const roles: Role[] = ['creator'];
 
     const newUser = await prisma.user.create({
       data: {
@@ -66,34 +59,6 @@ export async function syncUserAfterAuth(): Promise<ActionResponse<User>> {
 }
 
 // ─── Update User Roles ──────────────────────────────────────────────────────
-
-export async function updateUserRoles(
-  roles: string[]
-): Promise<ActionResponse<User>> {
-  try {
-    const session = await getSession();
-    if (!session) {
-      return { success: false, error: 'יש להתחבר כדי לעדכן תפקידים' };
-    }
-
-    // Validate roles
-    const validRoles: Role[] = ['creator', 'matchmaker', 'organizer'];
-    const filteredRoles = roles.filter((r): r is Role =>
-      validRoles.includes(r as Role)
-    );
-
-    if (filteredRoles.length === 0) {
-      return { success: false, error: 'נא לבחור לפחות תפקיד אחד תקין' };
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: { roles: filteredRoles },
-    });
-
-    return { success: true, data: updatedUser };
-  } catch (error) {
-    console.error('updateUserRoles error:', error);
-    return { success: false, error: 'שגיאה בעדכון התפקידים' };
-  }
-}
+// REMOVED: updateUserRoles() was a privilege escalation vulnerability.
+// Users could self-assign any role (matchmaker, organizer) without authorization.
+// Role changes should only be performed by an admin through a secure admin panel.

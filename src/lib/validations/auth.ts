@@ -10,9 +10,6 @@ export const registerSchema = z.object({
   email: z.string().email('כתובת אימייל לא תקינה'),
   password: z.string().min(6, 'סיסמה חייבת להיות לפחות 6 תווים'),
   phone: z.string().optional().or(z.literal('')),
-  roles: z
-    .array(z.enum(['creator', 'matchmaker', 'organizer']))
-    .min(1, 'נא לבחור לפחות תפקיד אחד'),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

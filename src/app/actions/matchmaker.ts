@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { sendStatusChangeNotification } from '@/lib/email';
+import { sendStatusChangeNotification, sendApprovalToTarget } from '@/lib/email';
 import type { ActionResponse, EventWithDetails, InterestRequestWithProfiles } from '@/types';
 import type { InterestRequest, RequestStatus } from '@prisma/client';
 
@@ -149,6 +149,9 @@ export async function updateRequestStatus(
           select: {
             subject_first_name: true,
             subject_last_name: true,
+            creator: {
+              select: { full_name: true, email: true },
+            },
           },
         },
         requester: {
@@ -184,8 +187,9 @@ export async function updateRequestStatus(
       data: updateData,
     });
 
-    // Send status change notification (non-blocking)
+    // Send status change notification to requester (non-blocking)
     const targetName = `${existingRequest.target_profile.subject_first_name} ${existingRequest.target_profile.subject_last_name}`;
+    const requesterName = `${existingRequest.requesting_profile.subject_first_name} ${existingRequest.requesting_profile.subject_last_name}`;
     sendStatusChangeNotification(
       existingRequest.requester.email,
       existingRequest.requester.full_name,
@@ -195,6 +199,18 @@ export async function updateRequestStatus(
     ).catch((err) => {
       console.error('Failed to send status change notification:', err);
     });
+
+    // Send approval notification to target profile's creator (non-blocking)
+    if (status === 'approved' && existingRequest.target_profile.creator) {
+      sendApprovalToTarget(
+        existingRequest.target_profile.creator.email,
+        existingRequest.target_profile.creator.full_name,
+        requesterName,
+        existingRequest.event.name
+      ).catch((err) => {
+        console.error('Failed to send approval notification to target:', err);
+      });
+    }
 
     return { success: true, data: updatedRequest };
   } catch (error) {

@@ -273,6 +273,47 @@ export async function getProfileById(
       return { success: false, error: 'הכרטיס לא נמצא' };
     }
 
+    // If the requester is the profile owner, return full data
+    if (profile.creator_id === user.id) {
+      return { success: true, data: profile };
+    }
+
+    // For non-owners, only return the profile if the requester shares an event with this profile
+    // (both have profiles opted into the same event)
+    const sharedEvent = await prisma.event.findFirst({
+      where: {
+        is_active: true,
+        AND: [
+          {
+            participations: {
+              some: { profile_id: id },
+            },
+          },
+          {
+            OR: [
+              // Requester has a profile in the same event
+              {
+                participations: {
+                  some: {
+                    profile: { creator_id: user.id },
+                  },
+                },
+              },
+              // Requester is the event organizer
+              { organizer_id: user.id },
+              // Requester is the event matchmaker
+              { matchmaker_id: user.id },
+            ],
+          },
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (!sharedEvent) {
+      return { success: false, error: 'אין הרשאה לצפות בכרטיס זה' };
+    }
+
     return { success: true, data: profile };
   } catch (error) {
     console.error('getProfileById error:', error);

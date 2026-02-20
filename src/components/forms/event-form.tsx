@@ -148,6 +148,22 @@ export function EventForm({ onSuccess }: EventFormProps) {
         </div>
       </div>
 
+      {/* Matchmaker email (optional) */}
+      <div className="grid gap-2">
+        <Label htmlFor="matchmaker_email">אימייל שדכן/ית (אופציונלי)</Label>
+        <Input
+          id="matchmaker_email"
+          name="matchmaker_email"
+          type="email"
+          placeholder="shadchan@example.com"
+          dir="ltr"
+          className="text-start"
+        />
+        <p className="text-xs text-muted-foreground">
+          אם תרצו לשייך שדכן/ית לאירוע, הזינו את כתובת האימייל שלהם
+        </p>
+      </div>
+
       {/* Submit button */}
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending && <Loader2 className="size-4 animate-spin" />}
