@@ -149,7 +149,7 @@ export default async function MatchmakerPage() {
                     <Button asChild className="w-full gap-1.5">
                       <Link href={`/matchmaker/${event.id}`}>
                         {t("viewRequests")}
-                        <ArrowLeft className="size-4" />
+                        <ArrowLeft className="size-4 ltr:rotate-180" />
                       </Link>
                     </Button>
                   </div>

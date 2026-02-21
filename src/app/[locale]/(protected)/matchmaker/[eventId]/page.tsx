@@ -23,7 +23,7 @@ export default async function MatchmakerEventPage({ params }: MatchmakerEventPag
         <div className="mb-6">
           <Button variant="ghost" size="sm" asChild className="gap-1.5">
             <Link href="/matchmaker">
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-4 ltr:rotate-180" />
               {t("backToEvents")}
             </Link>
           </Button>
@@ -45,7 +45,7 @@ export default async function MatchmakerEventPage({ params }: MatchmakerEventPag
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild className="gap-1.5">
           <Link href="/matchmaker">
-            <ArrowRight className="size-4" />
+            <ArrowRight className="size-4 ltr:rotate-180" />
             {t("backToEvents")}
           </Link>
         </Button>

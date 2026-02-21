@@ -58,7 +58,7 @@ export default async function LandingPage() {
                 <Link href="/auth/register">
                   <Button size="lg" className="w-full px-8 text-base sm:w-auto">
                     {t("heroCta")}
-                    <ArrowLeft className="size-4" />
+                    <ArrowLeft className="size-4 ltr:rotate-180" />
                   </Button>
                 </Link>
                 <Link href="/auth/login">
@@ -166,7 +166,7 @@ export default async function LandingPage() {
                 <Link href="/auth/register">
                   <Button size="lg" className="w-full px-8 text-base sm:w-auto">
                     {t("ctaButton")}
-                    <ArrowLeft className="size-4" />
+                    <ArrowLeft className="size-4 ltr:rotate-180" />
                   </Button>
                 </Link>
               </div>

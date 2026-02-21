@@ -57,7 +57,7 @@ export default async function BrowsePage({ params }: PageProps) {
       <div className="mb-6 flex items-center gap-4">
         <Button variant="ghost" size="sm" asChild className="gap-2">
           <Link href={`/event/${id}`}>
-            <ArrowRight className="size-4" />
+            <ArrowRight className="size-4 ltr:rotate-180" />
             {t("backToEvent")}
           </Link>
         </Button>
