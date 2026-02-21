@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Filter } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { EventBrowseProfile, ProfileFilters } from "@/types"
 import { calculateAge } from "@/lib/utils"
@@ -89,6 +90,9 @@ export function BrowsePageContent({
   sentInterestProfileIds,
   userProfileOptions,
 }: BrowsePageContentProps) {
+  const t = useTranslations("browse")
+  const tc = useTranslations("common")
+
   const [filters, setFilters] = React.useState<ProfileFilters>({})
   const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false)
 
@@ -116,18 +120,18 @@ export function BrowsePageContent({
         {/* Mobile filter trigger */}
         <div className="mb-4 flex items-center justify-between lg:hidden">
           <span className="text-sm text-muted-foreground">
-            {filteredProfiles.length} פרופילים
+            {tc("profilesCount", { count: filteredProfiles.length })}
           </span>
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Filter className="size-4" />
-                סינון
+                {t("filter")}
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="overflow-y-auto">
               <SheetHeader>
-                <SheetTitle>סינון פרופילים</SheetTitle>
+                <SheetTitle>{t("filterProfiles")}</SheetTitle>
               </SheetHeader>
               <div className="px-4 pb-4">
                 <ProfileFiltersPanel
@@ -142,7 +146,7 @@ export function BrowsePageContent({
         {/* Desktop result count */}
         <div className="mb-4 hidden lg:block">
           <span className="text-sm text-muted-foreground">
-            {filteredProfiles.length} פרופילים מתוך {allProfiles.length}
+            {tc("outOf", { count: filteredProfiles.length, total: allProfiles.length })}
           </span>
         </div>
 

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { createEvent } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,8 @@ type EventFormProps = {
 export function EventForm({ onSuccess }: EventFormProps) {
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const t = useTranslations("event")
+  const tCommon = useTranslations("common")
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -33,10 +36,10 @@ export function EventForm({ onSuccess }: EventFormProps) {
       if (result.success) {
         onSuccess?.()
       } else {
-        setError(result.error ?? "אירעה שגיאה. נסו שוב.")
+        setError(result.error ?? tCommon("genericError"))
       }
     } catch {
-      setError("אירעה שגיאה בלתי צפויה. נסו שוב.")
+      setError(tCommon("unexpectedError"))
     } finally {
       setIsPending(false)
     }
@@ -53,39 +56,39 @@ export function EventForm({ onSuccess }: EventFormProps) {
 
       {/* Event name */}
       <div className="grid gap-2">
-        <Label htmlFor="name">שם האירוע</Label>
+        <Label htmlFor="name">{t("eventName")}</Label>
         <Input
           id="name"
           name="name"
           required
-          placeholder="שם האירוע"
+          placeholder={t("eventName")}
         />
       </div>
 
       {/* Description */}
       <div className="grid gap-2">
-        <Label htmlFor="description">תיאור</Label>
+        <Label htmlFor="description">{t("eventDescription")}</Label>
         <Textarea
           id="description"
           name="description"
-          placeholder="תיאור האירוע"
+          placeholder={t("eventDescriptionPlaceholder")}
           rows={3}
         />
       </div>
 
       {/* Location */}
       <div className="grid gap-2">
-        <Label htmlFor="location">מיקום (אופציונלי)</Label>
+        <Label htmlFor="location">{t("eventLocation")}</Label>
         <Input
           id="location"
           name="location"
-          placeholder="כתובת או שם המקום"
+          placeholder={t("eventLocationPlaceholder")}
         />
       </div>
 
       {/* Event date */}
       <div className="grid gap-2">
-        <Label htmlFor="event_date">תאריך האירוע</Label>
+        <Label htmlFor="event_date">{t("eventDate")}</Label>
         <Input
           id="event_date"
           name="event_date"
@@ -99,7 +102,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
       {/* Time range */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="start_time">שעת התחלה</Label>
+          <Label htmlFor="start_time">{t("startTime")}</Label>
           <Input
             id="start_time"
             name="start_time"
@@ -110,7 +113,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="end_time">שעת סיום</Label>
+          <Label htmlFor="end_time">{t("endTime")}</Label>
           <Input
             id="end_time"
             name="end_time"
@@ -125,7 +128,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
       {/* Access hours */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="pre_access_hours">שעות גישה לפני</Label>
+          <Label htmlFor="pre_access_hours">{t("preAccessHours")}</Label>
           <Input
             id="pre_access_hours"
             name="pre_access_hours"
@@ -137,11 +140,11 @@ export function EventForm({ onSuccess }: EventFormProps) {
             className="text-start"
           />
           <p className="text-xs text-muted-foreground">
-            כמה שעות לפני האירוע ניתן לגלוש בפרופילים
+            {t("preAccessDescription")}
           </p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="post_access_hours">שעות גישה אחרי</Label>
+          <Label htmlFor="post_access_hours">{t("postAccessHours")}</Label>
           <Input
             id="post_access_hours"
             name="post_access_hours"
@@ -153,14 +156,14 @@ export function EventForm({ onSuccess }: EventFormProps) {
             className="text-start"
           />
           <p className="text-xs text-muted-foreground">
-            כמה שעות אחרי האירוע ניתן להגיש בקשות
+            {t("postAccessDescription")}
           </p>
         </div>
       </div>
 
       {/* Matchmaker email (optional) */}
       <div className="grid gap-2">
-        <Label htmlFor="matchmaker_email">אימייל שדכן/ית (אופציונלי)</Label>
+        <Label htmlFor="matchmaker_email">{t("matchmakerEmail")}</Label>
         <Input
           id="matchmaker_email"
           name="matchmaker_email"
@@ -170,14 +173,14 @@ export function EventForm({ onSuccess }: EventFormProps) {
           className="text-start"
         />
         <p className="text-xs text-muted-foreground">
-          אם תרצו לשייך שדכן/ית לאירוע, הזינו את כתובת האימייל שלהם
+          {t("matchmakerEmailDescription")}
         </p>
       </div>
 
       {/* Submit button */}
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending && <Loader2 className="size-4 animate-spin" />}
-        יצירת אירוע
+        {t("createEventButton")}
       </Button>
     </form>
   )

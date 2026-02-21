@@ -1,7 +1,10 @@
 import { Heart } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Separator } from "@/components/ui/separator";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("landing");
+  const tc = await getTranslations("common");
   const currentYear = new Date().getFullYear();
 
   return (
@@ -10,14 +13,14 @@ export function Footer() {
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-2">
             <Heart className="size-4 text-primary" />
-            <span className="text-sm font-semibold text-primary">בשערט</span>
+            <span className="text-sm font-semibold text-primary">{tc("appName")}</span>
           </div>
           <Separator className="max-w-xs" />
           <p className="text-center text-xs text-muted-foreground">
-            &copy; {currentYear} בשערט. כל הזכויות שמורות.
+            {t("footerCopyright", { year: currentYear })}
           </p>
           <p className="text-center text-xs text-muted-foreground">
-            פלטפורמת שידוכים מבוססת אירועים לקהילות אורתודוקסיות
+            {t("footerTagline")}
           </p>
         </div>
       </div>

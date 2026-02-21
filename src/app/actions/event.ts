@@ -17,7 +17,7 @@ export async function assignMatchmaker(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לשייך שדכן/ית' };
+      return { success: false, error: 'actions.loginToAssignMatchmaker' };
     }
 
     // Verify event exists
@@ -27,12 +27,12 @@ export async function assignMatchmaker(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     // Verify the current user is the event organizer
     if (event.organizer_id !== user.id) {
-      return { success: false, error: 'רק מארגן האירוע יכול לשייך שדכן/ית' };
+      return { success: false, error: 'actions.onlyOrganizerCanAssign' };
     }
 
     // Look up the target user by email
@@ -42,12 +42,12 @@ export async function assignMatchmaker(
     });
 
     if (!matchmakerUser) {
-      return { success: false, error: 'המשתמש עם אימייל זה לא נמצא' };
+      return { success: false, error: 'actions.userNotFound' };
     }
 
     // Verify the target user has the 'matchmaker' role
     if (!matchmakerUser.roles.includes('matchmaker')) {
-      return { success: false, error: 'המשתמש אינו בעל תפקיד שדכן/ית' };
+      return { success: false, error: 'actions.userNotMatchmaker' };
     }
 
     // Update the event's matchmaker_id
@@ -59,7 +59,7 @@ export async function assignMatchmaker(
     return { success: true, data: updatedEvent };
   } catch (error) {
     console.error('assignMatchmaker error:', error);
-    return { success: false, error: 'שגיאה בשיוך שדכן/ית לאירוע' };
+    return { success: false, error: 'actions.assignMatchmakerError' };
   }
 }
 
@@ -94,12 +94,12 @@ export async function createEvent(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי ליצור אירוע' };
+      return { success: false, error: 'actions.loginToCreateEvent' };
     }
 
     // Verify user has organizer role
     if (!user.roles.includes('organizer')) {
-      return { success: false, error: 'רק מארגנים יכולים ליצור אירועים' };
+      return { success: false, error: 'actions.onlyOrganizersCreateEvents' };
     }
 
     const matchmakerEmail = (formData.get('matchmaker_email') as string)?.trim() || null;
@@ -119,7 +119,7 @@ export async function createEvent(
     const parsed = createEventSchema.safeParse(rawData);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     const data = parsed.data;
@@ -137,7 +137,7 @@ export async function createEvent(
       attempts++;
     }
     if (attempts >= 5) {
-      return { success: false, error: 'שגיאה ביצירת קוד הצטרפות, נא לנסות שנית' };
+      return { success: false, error: 'actions.joinCodeError' };
     }
 
     const event = await prisma.event.create({
@@ -179,7 +179,7 @@ export async function createEvent(
     return { success: true, data: event };
   } catch (error) {
     console.error('createEvent error:', error);
-    return { success: false, error: 'שגיאה ביצירת האירוע' };
+    return { success: false, error: 'actions.eventCreateError' };
   }
 }
 
@@ -191,7 +191,7 @@ export async function getEventById(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות באירוע' };
+      return { success: false, error: 'actions.loginToViewEvent' };
     }
 
     const event = await prisma.event.findUnique({
@@ -200,7 +200,7 @@ export async function getEventById(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     // Strip join_code for non-organizer users
@@ -211,7 +211,7 @@ export async function getEventById(
     return { success: true, data: event };
   } catch (error) {
     console.error('getEventById error:', error);
-    return { success: false, error: 'שגיאה בטעינת האירוע' };
+    return { success: false, error: 'actions.eventLoadError' };
   }
 }
 
@@ -223,7 +223,7 @@ export async function getMyEvents(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות באירועים' };
+      return { success: false, error: 'actions.loginToViewEvents' };
     }
 
     // Find the user's profile IDs so we can look up participated events
@@ -260,7 +260,7 @@ export async function getMyEvents(): Promise<
     return { success: true, data: events };
   } catch (error) {
     console.error('getMyEvents error:', error);
-    return { success: false, error: 'שגיאה בטעינת האירועים' };
+    return { success: false, error: 'actions.eventsLoadError' };
   }
 }
 
@@ -272,7 +272,7 @@ export async function getEventByJoinCode(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות באירוע' };
+      return { success: false, error: 'actions.loginToViewEvent' };
     }
 
     const event = await prisma.event.findUnique({
@@ -281,17 +281,17 @@ export async function getEventByJoinCode(
     });
 
     if (!event) {
-      return { success: false, error: 'אירוע לא נמצא עם קוד זה' };
+      return { success: false, error: 'actions.eventNotFoundByCode' };
     }
 
     if (!event.is_active) {
-      return { success: false, error: 'האירוע אינו פעיל' };
+      return { success: false, error: 'actions.eventNotActive' };
     }
 
     return { success: true, data: event };
   } catch (error) {
     console.error('getEventByJoinCode error:', error);
-    return { success: false, error: 'שגיאה בטעינת האירוע' };
+    return { success: false, error: 'actions.eventLoadError' };
   }
 }
 
@@ -304,7 +304,7 @@ export async function optInProfile(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי להצטרף לאירוע' };
+      return { success: false, error: 'actions.loginToJoinEvent' };
     }
 
     // Verify profile exists and user owns it
@@ -314,15 +314,15 @@ export async function optInProfile(
     });
 
     if (!profile) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     if (profile.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לשייך כרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToAssignCard' };
     }
 
     if (!profile.is_active) {
-      return { success: false, error: 'הכרטיס אינו פעיל' };
+      return { success: false, error: 'actions.cardNotActiveForJoin' };
     }
 
     // Verify event exists and is active
@@ -332,11 +332,11 @@ export async function optInProfile(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (!event.is_active) {
-      return { success: false, error: 'האירוע אינו פעיל' };
+      return { success: false, error: 'actions.eventNotActive' };
     }
 
     // Check for duplicate opt-in
@@ -350,7 +350,7 @@ export async function optInProfile(
     });
 
     if (existingParticipation) {
-      return { success: false, error: 'הכרטיס כבר משויך לאירוע זה' };
+      return { success: false, error: 'actions.cardAlreadyInEvent' };
     }
 
     const participation = await prisma.eventParticipation.create({
@@ -364,7 +364,7 @@ export async function optInProfile(
     return { success: true, data: participation };
   } catch (error) {
     console.error('optInProfile error:', error);
-    return { success: false, error: 'שגיאה בהצטרפות לאירוע' };
+    return { success: false, error: 'actions.eventJoinError' };
   }
 }
 
@@ -376,7 +376,7 @@ export async function getEventParticipants(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות במשתתפים' };
+      return { success: false, error: 'actions.loginToViewParticipants' };
     }
 
     // Verify event exists and fetch organizer/matchmaker for authorization
@@ -386,7 +386,7 @@ export async function getEventParticipants(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     // Authorization: user must be organizer, matchmaker, or a participant
@@ -403,7 +403,7 @@ export async function getEventParticipants(
       });
 
       if (!userParticipation) {
-        return { success: false, error: 'אין הרשאה לצפות במשתתפי אירוע זה' };
+        return { success: false, error: 'actions.noPermissionToViewParticipants' };
       }
     }
 
@@ -422,7 +422,7 @@ export async function getEventParticipants(
     return { success: true, data: profiles };
   } catch (error) {
     console.error('getEventParticipants error:', error);
-    return { success: false, error: 'שגיאה בטעינת המשתתפים' };
+    return { success: false, error: 'actions.participantsLoadError' };
   }
 }
 
@@ -434,7 +434,7 @@ export async function updateEvent(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לעדכן אירוע' };
+      return { success: false, error: 'actions.loginToUpdateEvent' };
     }
 
     const rawData = {
@@ -452,7 +452,7 @@ export async function updateEvent(
     const parsed = updateEventSchema.safeParse(rawData);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     const { id, ...updateFields } = parsed.data;
@@ -464,11 +464,11 @@ export async function updateEvent(
     });
 
     if (!existingEvent) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (existingEvent.organizer_id !== user.id) {
-      return { success: false, error: 'רק מארגן האירוע יכול לעדכן אותו' };
+      return { success: false, error: 'actions.onlyOrganizerCanUpdate' };
     }
 
     const updatedEvent = await prisma.event.update({
@@ -479,7 +479,7 @@ export async function updateEvent(
     return { success: true, data: updatedEvent };
   } catch (error) {
     console.error('updateEvent error:', error);
-    return { success: false, error: 'שגיאה בעדכון האירוע' };
+    return { success: false, error: 'actions.eventUpdateError' };
   }
 }
 
@@ -491,7 +491,7 @@ export async function toggleEventActive(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לשנות סטטוס אירוע' };
+      return { success: false, error: 'actions.loginToToggleEventStatus' };
     }
 
     // Verify event exists and user is the organizer
@@ -501,11 +501,11 @@ export async function toggleEventActive(
     });
 
     if (!existingEvent) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (existingEvent.organizer_id !== user.id) {
-      return { success: false, error: 'רק מארגן האירוע יכול לשנות את סטטוס האירוע' };
+      return { success: false, error: 'actions.onlyOrganizerCanToggle' };
     }
 
     const updatedEvent = await prisma.event.update({
@@ -516,7 +516,7 @@ export async function toggleEventActive(
     return { success: true, data: updatedEvent };
   } catch (error) {
     console.error('toggleEventActive error:', error);
-    return { success: false, error: 'שגיאה בשינוי סטטוס האירוע' };
+    return { success: false, error: 'actions.eventToggleError' };
   }
 }
 
@@ -529,7 +529,7 @@ export async function leaveEvent(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לעזוב אירוע' };
+      return { success: false, error: 'actions.loginToLeaveEvent' };
     }
 
     // Verify the profile belongs to the current user
@@ -539,11 +539,11 @@ export async function leaveEvent(
     });
 
     if (!profile) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     if (profile.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה להסיר כרטיס זה מהאירוע' };
+      return { success: false, error: 'actions.noPermissionToRemoveCard' };
     }
 
     // Find and delete the EventParticipation record
@@ -557,7 +557,7 @@ export async function leaveEvent(
     });
 
     if (!participation) {
-      return { success: false, error: 'הכרטיס אינו משתתף באירוע זה' };
+      return { success: false, error: 'actions.cardNotInEvent' };
     }
 
     await prisma.eventParticipation.delete({
@@ -580,7 +580,7 @@ export async function leaveEvent(
     return { success: true, data: null };
   } catch (error) {
     console.error('leaveEvent error:', error);
-    return { success: false, error: 'שגיאה בעזיבת האירוע' };
+    return { success: false, error: 'actions.leaveEventError' };
   }
 }
 
@@ -593,7 +593,7 @@ export async function removeParticipant(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי להסיר משתתף' };
+      return { success: false, error: 'actions.loginToRemoveParticipant' };
     }
 
     // Verify the current user is the event organizer
@@ -603,11 +603,11 @@ export async function removeParticipant(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (event.organizer_id !== user.id) {
-      return { success: false, error: 'רק מארגן האירוע יכול להסיר משתתפים' };
+      return { success: false, error: 'actions.onlyOrganizerCanRemove' };
     }
 
     // Find and delete the EventParticipation record
@@ -621,7 +621,7 @@ export async function removeParticipant(
     });
 
     if (!participation) {
-      return { success: false, error: 'המשתתף לא נמצא באירוע זה' };
+      return { success: false, error: 'actions.participantNotInEvent' };
     }
 
     await prisma.eventParticipation.delete({
@@ -642,6 +642,6 @@ export async function removeParticipant(
     return { success: true, data: null };
   } catch (error) {
     console.error('removeParticipant error:', error);
-    return { success: false, error: 'שגיאה בהסרת המשתתף מהאירוע' };
+    return { success: false, error: 'actions.removeParticipantError' };
   }
 }

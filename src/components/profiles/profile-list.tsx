@@ -3,6 +3,7 @@
 import * as React from "react"
 import type { ProfileWithCreator } from "@/types"
 import { UserCircle } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { deleteProfile as deleteProfileAction } from "@/app/actions/profile"
 import {
@@ -25,6 +26,7 @@ type ProfileListProps = {
 export function ProfileList({ profiles: initialProfiles }: ProfileListProps) {
   const [profiles, setProfiles] =
     React.useState<ProfileWithCreator[]>(initialProfiles)
+  const t = useTranslations("profile")
 
   async function handleDelete(id: string) {
     const result = await deleteProfileAction(id)
@@ -38,9 +40,9 @@ export function ProfileList({ profiles: initialProfiles }: ProfileListProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-16">
           <UserCircle className="mb-4 size-16 text-muted-foreground/50" />
-          <CardTitle className="mb-2">אין עדיין כרטיסי פרופיל</CardTitle>
+          <CardTitle className="mb-2">{t("noProfilesTitle")}</CardTitle>
           <CardDescription className="mb-6 text-center">
-            צרו את כרטיס הפרופיל הראשון שלכם כדי להתחיל להשתתף באירועים
+            {t("noProfilesDescription")}
           </CardDescription>
           <CreateProfileDialog variant="empty-state" />
         </CardContent>

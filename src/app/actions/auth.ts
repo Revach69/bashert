@@ -13,7 +13,7 @@ export async function syncUserAfterAuth(): Promise<ActionResponse<User>> {
   try {
     const session = await getSession();
     if (!session) {
-      return { success: false, error: 'לא נמצאה הרשאה פעילה' };
+      return { success: false, error: 'actions.noActiveAuth' };
     }
 
     const supabaseUser = session.user;
@@ -54,7 +54,7 @@ export async function syncUserAfterAuth(): Promise<ActionResponse<User>> {
     return { success: true, data: newUser };
   } catch (error) {
     console.error('syncUserAfterAuth error:', error);
-    return { success: false, error: 'שגיאה בסנכרון המשתמש' };
+    return { success: false, error: 'actions.syncError' };
   }
 }
 

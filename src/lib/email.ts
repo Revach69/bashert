@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { isRtl } from '@/i18n/config';
 
 // ─── HTML Escape Helper ────────────────────────────────────────────────────
 
@@ -9,6 +10,67 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// ─── Translation Interpolation Helper ──────────────────────────────────────
+
+/**
+ * Replaces `{key}` placeholders in a translation string with provided values.
+ * Values are HTML-escaped before insertion.
+ * After interpolation, converts `<highlight>...</highlight>` tags to
+ * `<span class="highlight">...</span>` for email HTML rendering.
+ */
+function interpolate(
+  template: string,
+  vars: Record<string, string>
+): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), escapeHtml(value));
+  }
+  // Convert <highlight> tags to styled spans
+  result = result
+    .replace(/<highlight>/g, '<span class="highlight">')
+    .replace(/<\/highlight>/g, '</span>');
+  return result;
+}
+
+// ─── Translation Loader ───────────────────────────────────────────────────
+
+interface EmailTranslations {
+  email: Record<string, string>;
+  status: Record<string, string>;
+  common: Record<string, string>;
+  landing: Record<string, string>;
+}
+
+/**
+ * Loads translations for a given locale from the messages JSON files.
+ * Falls back to Hebrew ('he') if the requested locale file is not found.
+ */
+async function getEmailTranslations(
+  locale: string = 'he'
+): Promise<EmailTranslations> {
+  try {
+    const messages = (
+      await import(`../messages/${locale}.json`)
+    ).default;
+    return {
+      email: messages.email as Record<string, string>,
+      status: messages.status as Record<string, string>,
+      common: messages.common as Record<string, string>,
+      landing: messages.landing as Record<string, string>,
+    };
+  } catch {
+    // Fallback to Hebrew if locale file not found
+    const messages = (await import('../messages/he.json')).default;
+    return {
+      email: messages.email as Record<string, string>,
+      status: messages.status as Record<string, string>,
+      common: messages.common as Record<string, string>,
+      landing: messages.landing as Record<string, string>,
+    };
+  }
 }
 
 // ─── Resend Client ──────────────────────────────────────────────────────────
@@ -51,18 +113,29 @@ async function sendEmail({ to, subject, html }: SendEmailParams): Promise<void> 
   }
 }
 
-// ─── RTL HTML Wrapper ───────────────────────────────────────────────────────
+// ─── Locale-Aware HTML Wrapper ──────────────────────────────────────────────
 
-function wrapHtml(bodyContent: string): string {
+function wrapHtml(
+  bodyContent: string,
+  appName: string,
+  footerText: string,
+  locale: string = 'he'
+): string {
+  const rtl = isRtl(locale);
+  const dir = rtl ? 'rtl' : 'ltr';
+  const fontFamily = rtl
+    ? "'Heebo', Arial, sans-serif"
+    : "Arial, 'Helvetica Neue', sans-serif";
+
   return `<!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="${locale}" dir="${dir}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: 'Heebo', Arial, sans-serif;
-      direction: rtl;
+      font-family: ${fontFamily};
+      direction: ${dir};
       text-align: start;
       background-color: #f9fafb;
       margin: 0;
@@ -109,13 +182,13 @@ function wrapHtml(bodyContent: string): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1>בשערט</h1>
+      <h1>${escapeHtml(appName)}</h1>
     </div>
     <div class="content">
       ${bodyContent}
     </div>
     <div class="footer">
-      <p>הודעה זו נשלחה ממערכת בשערט</p>
+      <p>${escapeHtml(footerText)}</p>
     </div>
   </div>
 </body>
@@ -128,25 +201,38 @@ export async function sendInterestConfirmation(
   to: string,
   requesterName: string,
   targetName: string,
-  eventName: string
+  eventName: string,
+  locale?: string
 ): Promise<void> {
-  const html = wrapHtml(`
-    <p>שלום,</p>
-    <p>
-      בקשת העניין של <span class="highlight">${escapeHtml(requesterName)}</span>
-      כלפי <span class="highlight">${escapeHtml(targetName)}</span>
-      באירוע <span class="highlight">${escapeHtml(eventName)}</span>
-      התקבלה בהצלחה.
-    </p>
-    <p>השדכן/ית המוקצה לאירוע יבדוק/תבדוק את הבקשה ויעדכן אותך בהמשך.</p>
-    <p>בהצלחה!</p>
-  `);
+  const effectiveLocale = locale || 'he';
+  const t = await getEmailTranslations(effectiveLocale);
 
-  await sendEmail({
-    to,
-    subject: `בשערט - בקשת עניין נשלחה בהצלחה (${escapeHtml(eventName)})`,
-    html,
+  const greeting = t.email.greeting;
+  const body = interpolate(t.email.interestConfirmationBody, {
+    requester: requesterName,
+    target: targetName,
+    event: eventName,
   });
+  const followUp = t.email.interestConfirmationFollowUp;
+  const goodLuck = t.email.goodLuck;
+
+  const html = wrapHtml(
+    `
+    <p>${escapeHtml(greeting)},</p>
+    <p>${body}</p>
+    <p>${escapeHtml(followUp)}</p>
+    <p>${escapeHtml(goodLuck)}</p>
+  `,
+    t.common.appName,
+    t.landing.emailSentFrom,
+    effectiveLocale
+  );
+
+  const subject = interpolate(t.email.interestConfirmationSubject, {
+    event: eventName,
+  });
+
+  await sendEmail({ to, subject, html });
 }
 
 // ─── New Request Notification (to shadchan) ─────────────────────────────────
@@ -156,25 +242,41 @@ export async function sendNewRequestToShadchan(
   shadchanName: string,
   requesterName: string,
   targetName: string,
-  eventName: string
+  eventName: string,
+  locale?: string
 ): Promise<void> {
-  const html = wrapHtml(`
-    <p>שלום ${escapeHtml(shadchanName)},</p>
-    <p>
-      התקבלה בקשת עניין חדשה באירוע <span class="highlight">${escapeHtml(eventName)}</span>:
-    </p>
-    <p>
-      <span class="highlight">${escapeHtml(requesterName)}</span>
-      מעוניין/ת ב-<span class="highlight">${escapeHtml(targetName)}</span>
-    </p>
-    <p>היכנס/י ללוח הבקרה של השדכן כדי לבדוק ולעדכן את הבקשה.</p>
-  `);
+  const effectiveLocale = locale || 'he';
+  const t = await getEmailTranslations(effectiveLocale);
 
-  await sendEmail({
-    to,
-    subject: `בשערט - בקשת עניין חדשה באירוע ${escapeHtml(eventName)}`,
-    html,
+  const greeting = interpolate(t.email.greetingName, {
+    name: shadchanName,
   });
+  const body = interpolate(t.email.newRequestBody, {
+    event: eventName,
+  });
+  const detail = interpolate(t.email.newRequestDetail, {
+    requester: requesterName,
+    target: targetName,
+  });
+  const action = t.email.newRequestAction;
+
+  const html = wrapHtml(
+    `
+    <p>${greeting}</p>
+    <p>${body}</p>
+    <p>${detail}</p>
+    <p>${escapeHtml(action)}</p>
+  `,
+    t.common.appName,
+    t.landing.emailSentFrom,
+    effectiveLocale
+  );
+
+  const subject = interpolate(t.email.newRequestSubject, {
+    event: eventName,
+  });
+
+  await sendEmail({ to, subject, html });
 }
 
 // ─── Approval Notification to Target (to target profile's creator) ──────────
@@ -183,59 +285,90 @@ export async function sendApprovalToTarget(
   to: string,
   targetUserName: string,
   requesterName: string,
-  eventName: string
+  eventName: string,
+  locale?: string
 ): Promise<void> {
-  const html = wrapHtml(`
-    <p>שלום ${escapeHtml(targetUserName)},</p>
-    <p>בשורות טובות! בקשת העניין כלפיכם אושרה.</p>
-    <p>
-      <span class="highlight">${escapeHtml(requesterName)}</span>
-      הביע/ה עניין כלפיכם באירוע <span class="highlight">${escapeHtml(eventName)}</span>
-      והבקשה אושרה על ידי השדכן/ית.
-    </p>
-    <p>היכנס/י למערכת לפרטים נוספים.</p>
-    <p>בהצלחה!</p>
-  `);
+  const effectiveLocale = locale || 'he';
+  const t = await getEmailTranslations(effectiveLocale);
 
-  await sendEmail({
-    to,
-    subject: `בשערט - בקשת עניין כלפיכם אושרה (${escapeHtml(eventName)})`,
-    html,
+  const greeting = interpolate(t.email.greetingName, {
+    name: targetUserName,
   });
+  const approvalBody = t.email.approvalBody;
+  const detail = interpolate(t.email.approvalDetail, {
+    requester: requesterName,
+    event: eventName,
+  });
+  const loginForDetails = t.email.loginForDetails;
+  const goodLuck = t.email.goodLuck;
+
+  const html = wrapHtml(
+    `
+    <p>${greeting}</p>
+    <p>${escapeHtml(approvalBody)}</p>
+    <p>${detail}</p>
+    <p>${escapeHtml(loginForDetails)}</p>
+    <p>${escapeHtml(goodLuck)}</p>
+  `,
+    t.common.appName,
+    t.landing.emailSentFrom,
+    effectiveLocale
+  );
+
+  const subject = interpolate(t.email.approvalSubject, {
+    event: eventName,
+  });
+
+  await sendEmail({ to, subject, html });
 }
 
 // ─── Status Change Notification (to request creator) ────────────────────────
-
-const statusLabels: Record<string, string> = {
-  pending: 'ממתינה',
-  reviewed: 'נבדקה',
-  approved: 'אושרה',
-  rejected: 'נדחתה',
-  archived: 'הועברה לארכיון',
-};
 
 export async function sendStatusChangeNotification(
   to: string,
   userName: string,
   targetName: string,
   eventName: string,
-  newStatus: string
+  newStatus: string,
+  locale?: string
 ): Promise<void> {
-  const statusLabel = statusLabels[newStatus] || newStatus;
+  const effectiveLocale = locale || 'he';
+  const t = await getEmailTranslations(effectiveLocale);
 
-  const html = wrapHtml(`
-    <p>שלום ${escapeHtml(userName)},</p>
-    <p>
-      סטטוס בקשת העניין שלך כלפי <span class="highlight">${escapeHtml(targetName)}</span>
-      באירוע <span class="highlight">${escapeHtml(eventName)}</span>
-      עודכן ל: <span class="highlight">${escapeHtml(statusLabel)}</span>
-    </p>
-    <p>היכנס/י למערכת לפרטים נוספים.</p>
-  `);
+  // Map status key to localized email-specific status label
+  const emailStatusLabels: Record<string, string> = {
+    pending: t.email.statusPending,
+    reviewed: t.email.statusReviewed,
+    approved: t.email.statusApproved,
+    rejected: t.email.statusRejected,
+    archived: t.email.statusArchived,
+  };
+  const statusLabel = emailStatusLabels[newStatus] || newStatus;
 
-  await sendEmail({
-    to,
-    subject: `בשערט - עדכון סטטוס בקשת עניין (${escapeHtml(eventName)})`,
-    html,
+  const greeting = interpolate(t.email.greetingName, {
+    name: userName,
   });
+  const body = interpolate(t.email.statusChangeBody, {
+    target: targetName,
+    event: eventName,
+    status: statusLabel,
+  });
+  const loginForDetails = t.email.loginForDetails;
+
+  const html = wrapHtml(
+    `
+    <p>${greeting}</p>
+    <p>${body}</p>
+    <p>${escapeHtml(loginForDetails)}</p>
+  `,
+    t.common.appName,
+    t.landing.emailSentFrom,
+    effectiveLocale
+  );
+
+  const subject = interpolate(t.email.statusChangeSubject, {
+    event: eventName,
+  });
+
+  await sendEmail({ to, subject, html });
 }

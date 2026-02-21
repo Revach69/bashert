@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Plus } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +18,7 @@ import { EventForm } from "@/components/forms/event-form"
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function CreateEventDialog() {
+  const t = useTranslations("event")
   const [open, setOpen] = React.useState(false)
 
   return (
@@ -24,15 +26,14 @@ export function CreateEventDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="size-4" />
-          צור אירוע חדש
+          {t("createEvent")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>יצירת אירוע חדש</DialogTitle>
+          <DialogTitle>{t("createEventDialogTitle")}</DialogTitle>
           <DialogDescription>
-            הגדירו את פרטי האירוע. לאחר יצירת האירוע תקבלו קוד הצטרפות
-            לשיתוף עם המשתתפים.
+            {t("createEventDialogDescription")}
           </DialogDescription>
         </DialogHeader>
         <EventForm onSuccess={() => setOpen(false)} />

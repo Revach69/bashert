@@ -44,7 +44,7 @@ export async function getEventBrowseProfiles(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לעיין בפרופילים' };
+      return { success: false, error: 'actions.loginToViewProfiles' };
     }
 
     // Verify event exists and is active
@@ -63,16 +63,16 @@ export async function getEventBrowseProfiles(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (!event.is_active) {
-      return { success: false, error: 'האירוע אינו פעיל' };
+      return { success: false, error: 'actions.eventNotActive' };
     }
 
     // Check that the event is within its access window
     if (!isEventAccessible(event)) {
-      return { success: false, error: 'האירוע אינו בחלון הגישה הפעיל' };
+      return { success: false, error: 'actions.eventNotInAccessWindow' };
     }
 
     // Authorization: user must be organizer, matchmaker, or have a profile in this event
@@ -89,7 +89,7 @@ export async function getEventBrowseProfiles(
       });
 
       if (!userParticipation) {
-        return { success: false, error: 'אין הרשאה לעיין בפרופילים באירוע זה' };
+        return { success: false, error: 'actions.noPermissionToBrowseEvent' };
       }
     }
 
@@ -160,7 +160,7 @@ export async function getEventBrowseProfiles(
     return { success: true, data: profiles };
   } catch (error) {
     console.error('getEventBrowseProfiles error:', error);
-    return { success: false, error: 'שגיאה בטעינת הפרופילים' };
+    return { success: false, error: 'actions.profilesLoadError' };
   }
 }
 
@@ -173,7 +173,7 @@ export async function getProfileDetailForEvent(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בפרופיל' };
+      return { success: false, error: 'actions.loginToViewProfile' };
     }
 
     // Verify event exists and is active
@@ -190,16 +190,16 @@ export async function getProfileDetailForEvent(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (!event.is_active) {
-      return { success: false, error: 'האירוע אינו פעיל' };
+      return { success: false, error: 'actions.eventNotActive' };
     }
 
     // Check that the event is within its access window
     if (!isEventAccessible(event)) {
-      return { success: false, error: 'האירוע אינו בחלון הגישה הפעיל' };
+      return { success: false, error: 'actions.eventNotInAccessWindow' };
     }
 
     // Verify the target profile is opted into this event
@@ -213,7 +213,7 @@ export async function getProfileDetailForEvent(
     });
 
     if (!targetParticipation) {
-      return { success: false, error: 'הפרופיל אינו משתתף באירוע זה' };
+      return { success: false, error: 'actions.profileNotInEvent' };
     }
 
     // Verify the viewer (current user) has at least one profile opted into this event
@@ -227,7 +227,7 @@ export async function getProfileDetailForEvent(
     });
 
     if (!viewerParticipation) {
-      return { success: false, error: 'יש להצטרף לאירוע כדי לצפות בפרופילים' };
+      return { success: false, error: 'actions.mustJoinEventToView' };
     }
 
     // Get full profile details with creator info
@@ -237,16 +237,16 @@ export async function getProfileDetailForEvent(
     });
 
     if (!profile) {
-      return { success: false, error: 'הפרופיל לא נמצא' };
+      return { success: false, error: 'actions.profileNotFound' };
     }
 
     if (!profile.is_active) {
-      return { success: false, error: 'הפרופיל אינו פעיל' };
+      return { success: false, error: 'actions.profileNotActive' };
     }
 
     return { success: true, data: profile };
   } catch (error) {
     console.error('getProfileDetailForEvent error:', error);
-    return { success: false, error: 'שגיאה בטעינת פרטי הפרופיל' };
+    return { success: false, error: 'actions.profileDetailLoadError' };
   }
 }

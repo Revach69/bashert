@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CalendarDays, Clock, Users } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { formatHebrewDate, formatTime } from "@/lib/utils"
 import type { EventWithDetails } from "@/types"
@@ -21,35 +22,36 @@ type EventCardItemProps = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
-function getStatusBadge(event: EventWithDetails) {
+function getStatusBadge(event: EventWithDetails, tc: (key: string) => string) {
   const now = new Date()
   const eventDate = new Date(event.event_date)
   const startTime = new Date(event.start_time)
   const endTime = new Date(event.end_time)
 
   if (!event.is_active) {
-    return <Badge variant="secondary">לא פעיל</Badge>
+    return <Badge variant="secondary">{tc("inactive")}</Badge>
   }
 
   if (now < startTime) {
     // Event hasn't started
     const isToday = eventDate.toDateString() === now.toDateString()
     if (isToday) {
-      return <Badge variant="default">היום</Badge>
+      return <Badge variant="default">{tc("today")}</Badge>
     }
-    return <Badge variant="outline">ממתין</Badge>
+    return <Badge variant="outline">{tc("pending")}</Badge>
   }
 
   if (now >= startTime && now <= endTime) {
-    return <Badge variant="default">פעיל כעת</Badge>
+    return <Badge variant="default">{tc("activeNow")}</Badge>
   }
 
-  return <Badge variant="secondary">הסתיים</Badge>
+  return <Badge variant="secondary">{tc("ended")}</Badge>
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function EventCardItem({ event }: EventCardItemProps) {
+  const tc = useTranslations("common")
   const eventDate = new Date(event.event_date)
   const startTime = new Date(event.start_time)
   const endTime = new Date(event.end_time)
@@ -59,7 +61,7 @@ export function EventCardItem({ event }: EventCardItemProps) {
     <Card>
       <CardHeader className="flex-row items-start justify-between gap-4">
         <CardTitle className="text-lg">{event.name}</CardTitle>
-        {getStatusBadge(event)}
+        {getStatusBadge(event, tc)}
       </CardHeader>
 
       <CardContent className="grid gap-3">
@@ -80,7 +82,7 @@ export function EventCardItem({ event }: EventCardItemProps) {
         {/* Participant count */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="size-4 shrink-0" />
-          <span>{participantCount} משתתפים</span>
+          <span>{tc("participants", { count: participantCount })}</span>
         </div>
 
         {/* Description */}
@@ -92,7 +94,7 @@ export function EventCardItem({ event }: EventCardItemProps) {
 
         {/* Join code */}
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">קוד הצטרפות:</span>
+          <span className="text-xs text-muted-foreground">{tc("joinCode")}</span>
           <code
             dir="ltr"
             className="rounded bg-muted px-2 py-0.5 text-xs font-mono font-semibold text-start"

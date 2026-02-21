@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 
 import type { EventBrowseProfile, InterestRequestWithProfiles } from "@/types"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,7 @@ export function EventDetailTabs({
   sentInterestProfileIds,
   userProfileOptions,
 }: EventDetailTabsProps) {
+  const t = useTranslations("browse")
   const [activeTab, setActiveTab] = React.useState<Tab>("browse")
 
   return (
@@ -53,7 +55,7 @@ export function EventDetailTabs({
             activeTab === "browse" && "shadow-sm"
           )}
         >
-          גלישה בפרופילים
+          {t("browseProfiles")}
         </Button>
         <Button
           variant={activeTab === "requests" ? "default" : "outline"}
@@ -65,7 +67,7 @@ export function EventDetailTabs({
             activeTab === "requests" && "shadow-sm"
           )}
         >
-          הבקשות שלי
+          {t("myRequests")}
           {requests.length > 0 && (
             <span className="ms-2 inline-flex size-5 items-center justify-center rounded-full bg-primary-foreground text-primary text-xs font-bold">
               {requests.length}

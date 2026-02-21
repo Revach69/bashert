@@ -3,6 +3,7 @@
 import * as React from "react"
 import type { ProfileWithCreator } from "@/types"
 import { Pencil, Trash2, User as UserIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { calculateAge } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -37,9 +38,11 @@ type ProfileCardItemProps = {
 export function ProfileCardItem({ profile, onDelete }: ProfileCardItemProps) {
   const [editOpen, setEditOpen] = React.useState(false)
   const [deleteConfirm, setDeleteConfirm] = React.useState(false)
+  const t = useTranslations("profile")
+  const tCommon = useTranslations("common")
 
   const age = calculateAge(new Date(profile.date_of_birth))
-  const genderLabel = profile.gender === "male" ? "זכר" : "נקבה"
+  const genderLabel = profile.gender === "male" ? tCommon("male") : tCommon("female")
   const genderIcon = profile.gender === "male" ? "♂" : "♀"
   const initials =
     (profile.subject_first_name?.[0] ?? "") +
@@ -78,7 +81,7 @@ export function ProfileCardItem({ profile, onDelete }: ProfileCardItemProps) {
             </span>
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>גיל {age}</span>
+            <span>{tCommon("age", { age })}</span>
             {profile.hashkafa && (
               <>
                 <span aria-hidden="true">&#183;</span>
@@ -115,15 +118,16 @@ export function ProfileCardItem({ profile, onDelete }: ProfileCardItemProps) {
           <DialogTrigger asChild>
             <Button variant="outline" size="sm" className="flex-1">
               <Pencil className="size-4" />
-              עריכה
+              {t("editButton")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>עריכת פרופיל</DialogTitle>
+              <DialogTitle>{t("editDialogTitle")}</DialogTitle>
               <DialogDescription>
-                עדכנו את פרטי הפרופיל של{" "}
-                {profile.subject_first_name} {profile.subject_last_name}
+                {t("editDialogDescription", {
+                  name: `${profile.subject_first_name} ${profile.subject_last_name}`
+                })}
               </DialogDescription>
             </DialogHeader>
             <ProfileForm
@@ -140,7 +144,7 @@ export function ProfileCardItem({ profile, onDelete }: ProfileCardItemProps) {
           onClick={handleDeleteClick}
         >
           <Trash2 className="size-4" />
-          {deleteConfirm ? "לחצו שוב לאישור" : "מחיקה"}
+          {deleteConfirm ? t("deleteConfirm") : t("deleteButton")}
         </Button>
       </CardFooter>
     </Card>

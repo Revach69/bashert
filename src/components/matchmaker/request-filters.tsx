@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Search, Heart } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
@@ -30,17 +31,6 @@ type RequestFiltersProps = {
   }
 }
 
-// ─── Status tabs config ─────────────────────────────────────────────────────────
-
-const statusTabs: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "הכל" },
-  { value: "pending", label: "ממתין" },
-  { value: "reviewed", label: "נבדק" },
-  { value: "approved", label: "מאושר" },
-  { value: "rejected", label: "נדחה" },
-  { value: "archived", label: "בארכיון" },
-]
-
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function RequestFilters({
@@ -52,6 +42,18 @@ export function RequestFilters({
   onSearchQueryChange,
   counts,
 }: RequestFiltersProps) {
+  const tStatus = useTranslations("status")
+  const t = useTranslations("matchmaker")
+
+  const statusTabs: { value: StatusFilter; label: string }[] = [
+    { value: "all", label: tStatus("all") },
+    { value: "pending", label: tStatus("pending") },
+    { value: "reviewed", label: tStatus("reviewed") },
+    { value: "approved", label: tStatus("approved") },
+    { value: "rejected", label: tStatus("rejected") },
+    { value: "archived", label: tStatus("archived") },
+  ]
+
   return (
     <div className="space-y-4">
       {/* Status filter tabs */}
@@ -87,7 +89,7 @@ export function RequestFilters({
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="חיפוש לפי שם..."
+            placeholder={t("searchByName")}
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
             className="ps-9"
@@ -101,7 +103,7 @@ export function RequestFilters({
           className="gap-1.5"
         >
           <Heart className={cn("size-4", mutualOnly && "fill-current")} />
-          הדדיות בלבד
+          {t("mutualOnly")}
           {counts.mutual > 0 && (
             <Badge
               variant={mutualOnly ? "secondary" : "outline"}

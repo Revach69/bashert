@@ -1,12 +1,15 @@
-import Link from "next/link";
 import { Heart } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/layout/logout-button";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { getSession, getCurrentUser } from "@/lib/auth";
+import { Link } from "@/i18n/navigation";
 import type { Role } from "@prisma/client";
 
 export async function Header() {
+  const t = await getTranslations("common");
   let isAuthenticated = false;
   let isMatchmaker = false;
   let isOrganizer = false;
@@ -25,13 +28,11 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Heart className="size-6 text-primary" />
-          <span className="text-xl font-bold text-primary">בשערט</span>
+          <span className="text-xl font-bold text-primary">{t("appName")}</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
           {isAuthenticated ? (
             <>
@@ -39,26 +40,26 @@ export async function Header() {
                 href="/dashboard"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                לוח בקרה
+                {t("dashboard")}
               </Link>
               <Link
                 href="/profile"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                פרופילים
+                {t("profiles")}
               </Link>
               <Link
                 href="/event"
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                אירועים
+                {t("events")}
               </Link>
               {isMatchmaker && (
                 <Link
                   href="/matchmaker"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  שדכן
+                  {t("matchmaker")}
                 </Link>
               )}
               {isOrganizer && (
@@ -66,26 +67,27 @@ export async function Header() {
                   href="/organizer"
                   className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  מארגן
+                  {t("organizer")}
                 </Link>
               )}
               <LogoutButton />
+              <LanguageSwitcher />
             </>
           ) : (
             <>
               <Link href="/auth/login">
                 <Button variant="ghost" size="sm">
-                  כניסה
+                  {t("login")}
                 </Button>
               </Link>
               <Link href="/auth/register">
-                <Button size="sm">הרשמה</Button>
+                <Button size="sm">{t("register")}</Button>
               </Link>
+              <LanguageSwitcher />
             </>
           )}
         </nav>
 
-        {/* Mobile Navigation */}
         <div className="md:hidden">
           <MobileNav
             isAuthenticated={isAuthenticated}

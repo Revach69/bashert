@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, LogOut } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { leaveEvent } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,8 @@ type LeaveEventButtonProps = {
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function LeaveEventButton({ eventId, profileId }: LeaveEventButtonProps) {
+  const t = useTranslations("event")
+  const tc = useTranslations("common")
   const router = useRouter()
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -42,11 +45,11 @@ export function LeaveEventButton({ eventId, profileId }: LeaveEventButtonProps) 
       if (result.success) {
         router.refresh()
       } else {
-        setError(result.error ?? "שגיאה בעזיבת האירוע")
+        setError(result.error ?? t("joinEventError"))
         setTimeout(() => setError(null), 3000)
       }
     } catch {
-      setError("אירעה שגיאה בלתי צפויה. נסו שוב.")
+      setError(tc("unexpectedError"))
       setTimeout(() => setError(null), 3000)
     } finally {
       setIsPending(false)
@@ -80,7 +83,7 @@ export function LeaveEventButton({ eventId, profileId }: LeaveEventButtonProps) 
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogCancel>{tc("cancel")}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleLeave}>
               עזיבת אירוע
             </AlertDialogAction>

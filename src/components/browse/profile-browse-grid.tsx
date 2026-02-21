@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { User as UserIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { EventBrowseProfile } from "@/types"
 import { calculateAge } from "@/lib/utils"
@@ -49,12 +50,14 @@ function ProfileBrowseCard({
   alreadySent: boolean
   userProfileOptions?: UserProfileOption[]
 }) {
+  const tc = useTranslations("common")
+
   const [selectedProfileId, setSelectedProfileId] = React.useState(
     userProfileIds[0] ?? ""
   )
 
   const age = calculateAge(new Date(profile.date_of_birth))
-  const genderLabel = profile.gender === "male" ? "זכר" : "נקבה"
+  const genderLabel = profile.gender === "male" ? tc("male") : tc("female")
   const genderIcon = profile.gender === "male" ? "♂" : "♀"
   const initials =
     (profile.subject_first_name?.[0] ?? "") +
@@ -63,7 +66,7 @@ function ProfileBrowseCard({
   const profileOptions = userProfileIds.length > 1
     ? (userProfileOptions ?? userProfileIds.map((id, index) => ({
         value: id,
-        label: `פרופיל ${index + 1}`,
+        label: tc("profileLabel", { index: index + 1 }),
       }))).map((opt) => ({ id: opt.value, label: opt.label }))
     : undefined
 
@@ -89,7 +92,7 @@ function ProfileBrowseCard({
             </span>
           </CardTitle>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span>גיל {age}</span>
+            <span>{tc("age", { age })}</span>
             {profile.hashkafa && (
               <>
                 <span aria-hidden="true">&#183;</span>
@@ -143,13 +146,15 @@ export function ProfileBrowseGrid({
   sentInterestProfileIds = [],
   userProfileOptions,
 }: ProfileBrowseGridProps) {
+  const t = useTranslations("browse")
+
   if (profiles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <UserIcon className="size-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold">אין פרופילים להצגה</h3>
+        <h3 className="text-lg font-semibold">{t("noProfilesTitle")}</h3>
         <p className="text-sm text-muted-foreground mt-2">
-          לא נמצאו פרופילים התואמים את הסינון שנבחר. נסו לשנות את הפילטרים.
+          {t("noProfilesDescription")}
         </p>
       </div>
     )

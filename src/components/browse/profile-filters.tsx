@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Filter, X } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { ProfileFilters } from "@/types"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,9 @@ export function ProfileFiltersPanel({
   filters,
   onFiltersChange,
 }: ProfileFiltersProps) {
+  const t = useTranslations("browse")
+  const tc = useTranslations("common")
+
   const [localFilters, setLocalFilters] = React.useState<ProfileFilters>(filters)
 
   // Sync with parent filters
@@ -84,46 +88,46 @@ export function ProfileFiltersPanel({
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-2">
         <Filter className="size-5" />
-        <h3 className="text-lg font-semibold">סינון</h3>
+        <h3 className="text-lg font-semibold">{t("filter")}</h3>
       </div>
 
       <Separator />
 
       {/* Gender filter */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="gender-filter">מגדר</Label>
+        <Label htmlFor="gender-filter">{t("genderFilter")}</Label>
         <Select
           value={localFilters.gender ?? "all"}
           onValueChange={handleGenderChange}
         >
           <SelectTrigger id="gender-filter">
-            <SelectValue placeholder="הכל" />
+            <SelectValue placeholder={t("all")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">הכל</SelectItem>
-            <SelectItem value="male">זכר</SelectItem>
-            <SelectItem value="female">נקבה</SelectItem>
+            <SelectItem value="all">{t("all")}</SelectItem>
+            <SelectItem value="male">{tc("male")}</SelectItem>
+            <SelectItem value="female">{tc("female")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Age range */}
       <div className="flex flex-col gap-2">
-        <Label>טווח גילאים</Label>
+        <Label>{t("ageRange")}</Label>
         <div className="flex items-center gap-2">
           <Input
             type="number"
-            placeholder="מ-"
+            placeholder={t("from")}
             min={18}
             max={120}
             value={localFilters.min_age ?? ""}
             onChange={handleMinAgeChange}
             className="flex-1"
           />
-          <span className="text-muted-foreground text-sm">עד</span>
+          <span className="text-muted-foreground text-sm">{t("toLabel")}</span>
           <Input
             type="number"
-            placeholder="עד-"
+            placeholder={t("to")}
             min={18}
             max={120}
             value={localFilters.max_age ?? ""}
@@ -135,10 +139,10 @@ export function ProfileFiltersPanel({
 
       {/* Hashkafa filter */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="hashkafa-filter">השקפה</Label>
+        <Label htmlFor="hashkafa-filter">{t("hashkafaFilter")}</Label>
         <Input
           id="hashkafa-filter"
-          placeholder="לדוגמה: דתי-לאומי"
+          placeholder={t("hashkafaPlaceholder")}
           value={localFilters.hashkafa ?? ""}
           onChange={handleHashkafaChange}
         />
@@ -146,10 +150,10 @@ export function ProfileFiltersPanel({
 
       {/* Ethnicity filter */}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="ethnicity-filter">מוצא עדתי</Label>
+        <Label htmlFor="ethnicity-filter">{t("ethnicityFilter")}</Label>
         <Input
           id="ethnicity-filter"
-          placeholder="לדוגמה: אשכנזי"
+          placeholder={t("ethnicityPlaceholder")}
           value={localFilters.ethnicity ?? ""}
           onChange={handleEthnicityChange}
         />
@@ -161,7 +165,7 @@ export function ProfileFiltersPanel({
       <div className="flex gap-2">
         <Button onClick={handleApplyFilters} className="flex-1 gap-2">
           <Filter className="size-4" />
-          סננו
+          {t("applyFilter")}
         </Button>
         <Button
           variant="outline"
@@ -170,7 +174,7 @@ export function ProfileFiltersPanel({
           className="gap-2"
         >
           <X className="size-4" />
-          נקו
+          {t("clearFilter")}
         </Button>
       </div>
     </div>

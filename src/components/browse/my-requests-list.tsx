@@ -1,4 +1,7 @@
+"use client"
+
 import { Heart, Inbox, User as UserIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { InterestRequestWithProfiles } from "@/types"
 import { formatHebrewDate } from "@/lib/utils"
@@ -15,22 +18,26 @@ import {
 
 type RequestStatus = "pending" | "reviewed" | "approved" | "rejected" | "archived"
 
-const statusConfig: Record<
-  RequestStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
-> = {
-  pending: { label: "ממתין", variant: "outline" },
-  reviewed: { label: "נבדק", variant: "secondary" },
-  approved: { label: "אושר", variant: "default" },
-  rejected: { label: "נדחה", variant: "destructive" },
-  archived: { label: "בארכיון", variant: "secondary" },
+function getStatusConfig(status: RequestStatus, t: (key: string) => string) {
+  const configs: Record<
+    RequestStatus,
+    { variant: "default" | "secondary" | "destructive" | "outline" }
+  > = {
+    pending: { variant: "outline" },
+    reviewed: { variant: "secondary" },
+    approved: { variant: "default" },
+    rejected: { variant: "destructive" },
+    archived: { variant: "secondary" },
+  }
+
+  return {
+    label: t(status),
+    variant: configs[status]?.variant ?? "outline",
+  }
 }
 
-function getStatusBadge(status: string) {
-  const config = statusConfig[status as RequestStatus] ?? {
-    label: status,
-    variant: "outline" as const,
-  }
+function getStatusBadge(status: string, t: (key: string) => string) {
+  const config = getStatusConfig(status as RequestStatus, t)
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
@@ -43,6 +50,9 @@ type MyRequestsListProps = {
 // ─── Single request card ────────────────────────────────────────────────────────
 
 function RequestCard({ request }: { request: InterestRequestWithProfiles }) {
+  const t = useTranslations("browse")
+  const ts = useTranslations("status")
+
   const target = request.target_profile
   const initials =
     (target.subject_first_name?.[0] ?? "") +
@@ -70,7 +80,7 @@ function RequestCard({ request }: { request: InterestRequestWithProfiles }) {
               {target.subject_first_name} {target.subject_last_name}
             </CardTitle>
             <span className="text-xs text-muted-foreground">
-              נשלח ב-{formatHebrewDate(sentDate)}
+              {t("sentOn", { date: formatHebrewDate(sentDate) })}
             </span>
           </div>
         </div>
@@ -80,21 +90,22 @@ function RequestCard({ request }: { request: InterestRequestWithProfiles }) {
           {request.is_mutual && (
             <span
               className="flex items-center gap-1 text-pink-600"
-              title="עניין הדדי"
+              title={t("mutualInterest")}
             >
               <Heart className="size-4 fill-current" />
-              <span className="text-xs font-medium">הדדי</span>
+              <span className="text-xs font-medium">{t("mutual")}</span>
             </span>
           )}
-          {getStatusBadge(request.status)}
+          {getStatusBadge(request.status, ts)}
         </div>
       </CardHeader>
 
       <CardContent>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>
-            מפרופיל: {request.requesting_profile.subject_first_name}{" "}
-            {request.requesting_profile.subject_last_name}
+            {t("fromProfile", {
+              name: `${request.requesting_profile.subject_first_name} ${request.requesting_profile.subject_last_name}`
+            })}
           </span>
         </div>
       </CardContent>
@@ -105,13 +116,15 @@ function RequestCard({ request }: { request: InterestRequestWithProfiles }) {
 // ─── List component ─────────────────────────────────────────────────────────────
 
 export function MyRequestsList({ requests }: MyRequestsListProps) {
+  const t = useTranslations("browse")
+
   if (requests.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Inbox className="size-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold">אין בקשות עדיין</h3>
+        <h3 className="text-lg font-semibold">{t("noRequestsTitle")}</h3>
         <p className="text-sm text-muted-foreground mt-2">
-          גלשו בפרופילים והביעו עניין כדי לראות את הבקשות שלכם כאן.
+          {t("noRequestsDescription")}
         </p>
       </div>
     )

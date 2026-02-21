@@ -15,6 +15,7 @@ import {
   Phone,
 } from "lucide-react"
 import type { RequestStatus } from "@prisma/client"
+import { useTranslations } from "next-intl"
 
 import { cn, calculateAge } from "@/lib/utils"
 import type { InterestRequestWithProfiles } from "@/types"
@@ -33,14 +34,6 @@ type RequestCardProps = {
 
 // ─── Status helpers ─────────────────────────────────────────────────────────────
 
-const statusLabels: Record<RequestStatus, string> = {
-  pending: "ממתין",
-  reviewed: "נבדק",
-  approved: "מאושר",
-  rejected: "נדחה",
-  archived: "בארכיון",
-}
-
 const statusVariants: Record<RequestStatus, "default" | "secondary" | "destructive" | "outline"> = {
   pending: "outline",
   reviewed: "secondary",
@@ -58,8 +51,11 @@ function ProfileSide({
   profile: InterestRequestWithProfiles["requesting_profile"]
   label: string
 }) {
+  const tCommon = useTranslations("common")
+  const tBrowse = useTranslations("browse")
+
   const age = calculateAge(new Date(profile.date_of_birth))
-  const genderLabel = profile.gender === "male" ? "זכר" : "נקבה"
+  const genderLabel = profile.gender === "male" ? tCommon("male") : tCommon("female")
   const initials =
     (profile.subject_first_name?.[0] ?? "") +
     (profile.subject_last_name?.[0] ?? "")
@@ -85,7 +81,7 @@ function ProfileSide({
             {profile.subject_first_name} {profile.subject_last_name}
           </p>
           <p className="text-sm text-muted-foreground">
-            {genderLabel}, גיל {age}
+            {genderLabel}, {tCommon("age", { age })}
           </p>
         </div>
       </div>
@@ -93,37 +89,37 @@ function ProfileSide({
       <div className="space-y-1.5 text-sm">
         {profile.hashkafa && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">השקפה:</span>
+            <span className="text-muted-foreground">{tBrowse("hashkafaLabel")}</span>
             <span>{profile.hashkafa}</span>
           </div>
         )}
         {profile.occupation && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">עיסוק:</span>
+            <span className="text-muted-foreground">{tBrowse("occupationLabel")}</span>
             <span>{profile.occupation}</span>
           </div>
         )}
         {profile.education && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">השכלה:</span>
+            <span className="text-muted-foreground">{tBrowse("educationLabel")}</span>
             <span>{profile.education}</span>
           </div>
         )}
         {profile.ethnicity && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">עדה:</span>
+            <span className="text-muted-foreground">{tBrowse("ethnicityLabel")}</span>
             <span>{profile.ethnicity}</span>
           </div>
         )}
         {profile.family_background && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">רקע משפחתי:</span>
+            <span className="text-muted-foreground">{tBrowse("familyBackgroundLabel")}</span>
             <span>{profile.family_background}</span>
           </div>
         )}
         {profile.height && (
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">גובה:</span>
+            <span className="text-muted-foreground">{tBrowse("heightLabel")}</span>
             <span>{profile.height}</span>
           </div>
         )}
@@ -139,12 +135,13 @@ function ContactInfo({
 }: {
   profile: InterestRequestWithProfiles["requesting_profile"]
 }) {
+  const t = useTranslations("matchmaker")
   const creator = profile.creator
 
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">
-        איש קשר: {creator.full_name}
+        {t("contactPerson", { name: creator.full_name })}
       </p>
       {creator.email && (
         <div className="flex items-center gap-2 text-sm">
@@ -184,6 +181,9 @@ export function RequestCard({ request }: RequestCardProps) {
   const [confirmReject, setConfirmReject] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [currentStatus, setCurrentStatus] = React.useState<RequestStatus>(request.status)
+  const t = useTranslations("matchmaker")
+  const tStatus = useTranslations("status")
+  const tCommon = useTranslations("common")
 
   // Reset confirmReject after timeout
   React.useEffect(() => {
@@ -228,11 +228,11 @@ export function RequestCard({ request }: RequestCardProps) {
           {request.is_mutual && (
             <Badge variant="default" className="gap-1 bg-pink-500 hover:bg-pink-600">
               <Heart className="size-3 fill-current" />
-              הדדי
+              {tCommon("mutual")}
             </Badge>
           )}
           <Badge variant={statusVariants[currentStatus]}>
-            {statusLabels[currentStatus]}
+            {tStatus(currentStatus)}
           </Badge>
         </div>
         <CardTitle className="text-sm text-muted-foreground">
@@ -245,12 +245,12 @@ export function RequestCard({ request }: RequestCardProps) {
         <div className="relative grid gap-6 sm:grid-cols-2">
           <ProfileSide
             profile={request.requesting_profile}
-            label="מבקש/ת"
+            label={t("requester")}
           />
           <div className="hidden sm:block absolute inset-y-0 start-1/2 w-px bg-border" />
           <ProfileSide
             profile={request.target_profile}
-            label="מועמד/ת"
+            label={t("candidate")}
           />
         </div>
 
@@ -270,17 +270,17 @@ export function RequestCard({ request }: RequestCardProps) {
             ) : (
               <ChevronDown className="size-4" />
             )}
-            פרטי קשר
+            {t("contactDetails")}
           </Button>
 
           {showContact && (
             <div className="mt-3 grid gap-4 sm:grid-cols-2 rounded-lg border p-4">
               <div>
-                <p className="mb-2 text-xs font-semibold">צד מבקש</p>
+                <p className="mb-2 text-xs font-semibold">{t("requestingSide")}</p>
                 <ContactInfo profile={request.requesting_profile} />
               </div>
               <div>
-                <p className="mb-2 text-xs font-semibold">צד מועמד</p>
+                <p className="mb-2 text-xs font-semibold">{t("candidateSide")}</p>
                 <ContactInfo profile={request.target_profile} />
               </div>
             </div>
@@ -300,7 +300,7 @@ export function RequestCard({ request }: RequestCardProps) {
             ) : (
               <ChevronDown className="size-4" />
             )}
-            הערות שדכן/ית
+            {t("matchmakerNotes")}
             {request.matchmaker_notes && (
               <span className="size-2 rounded-full bg-primary" />
             )}
@@ -311,7 +311,7 @@ export function RequestCard({ request }: RequestCardProps) {
               <Textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="הוסיפו הערות פנימיות..."
+                placeholder={t("addNotesPlaceholder")}
                 rows={3}
                 className="resize-none"
               />
@@ -322,7 +322,7 @@ export function RequestCard({ request }: RequestCardProps) {
                 className="gap-1.5"
               >
                 <Save className="size-4" />
-                {isPending ? "שומר..." : "שמירת הערה"}
+                {isPending ? t("savingNote") : t("saveNote")}
               </Button>
             </div>
           )}
@@ -346,7 +346,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <Eye className="size-4" />
-              סימון כנבדק
+              {t("markAsReviewed")}
             </Button>
             <Button
               size="sm"
@@ -355,7 +355,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <Check className="size-4" />
-              אישור
+              {t("approve")}
             </Button>
             <Button
               size="sm"
@@ -365,7 +365,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <X className="size-4" />
-              {confirmReject ? "לחצו שוב לאישור דחייה" : "דחייה"}
+              {confirmReject ? t("confirmReject") : t("reject")}
             </Button>
           </>
         )}
@@ -379,7 +379,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <Check className="size-4" />
-              אישור
+              {t("approve")}
             </Button>
             <Button
               size="sm"
@@ -389,7 +389,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <X className="size-4" />
-              {confirmReject ? "לחצו שוב לאישור דחייה" : "דחייה"}
+              {confirmReject ? t("confirmReject") : t("reject")}
             </Button>
           </>
         )}
@@ -403,7 +403,7 @@ export function RequestCard({ request }: RequestCardProps) {
             className="gap-1.5"
           >
             <Archive className="size-4" />
-            העברה לארכיון
+            {t("moveToArchive")}
           </Button>
         )}
 
@@ -416,7 +416,7 @@ export function RequestCard({ request }: RequestCardProps) {
               disabled={isPending}
               className="gap-1.5"
             >
-              החזרה לממתין
+              {t("returnToPending")}
             </Button>
             <Button
               size="sm"
@@ -426,7 +426,7 @@ export function RequestCard({ request }: RequestCardProps) {
               className="gap-1.5"
             >
               <Archive className="size-4" />
-              העברה לארכיון
+              {t("moveToArchive")}
             </Button>
           </>
         )}
@@ -439,7 +439,7 @@ export function RequestCard({ request }: RequestCardProps) {
             disabled={isPending}
             className="gap-1.5"
           >
-            החזרה לממתין
+            {t("returnToPending")}
           </Button>
         )}
       </CardFooter>

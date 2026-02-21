@@ -3,6 +3,7 @@
 import * as React from "react"
 import type { ProfileCard } from "@prisma/client"
 import { Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { createProfile, updateProfile } from "@/app/actions/profile"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,8 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
   const [gender, setGender] = React.useState<string>(
     initialData?.gender ?? ""
   )
+  const t = useTranslations("profile")
+  const tCommon = useTranslations("common")
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -53,10 +56,10 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       if (result.success) {
         onSuccess?.()
       } else {
-        setError(result.error ?? "אירעה שגיאה. נסו שוב.")
+        setError(result.error ?? tCommon("genericError"))
       }
     } catch {
-      setError("אירעה שגיאה בלתי צפויה. נסו שוב.")
+      setError(tCommon("unexpectedError"))
     } finally {
       setIsPending(false)
     }
@@ -79,23 +82,23 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Name fields - two column grid */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="subject_first_name">שם פרטי</Label>
+          <Label htmlFor="subject_first_name">{t("firstName")}</Label>
           <Input
             id="subject_first_name"
             name="subject_first_name"
             required
             defaultValue={initialData?.subject_first_name ?? ""}
-            placeholder="שם פרטי"
+            placeholder={t("firstName")}
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="subject_last_name">שם משפחה</Label>
+          <Label htmlFor="subject_last_name">{t("lastName")}</Label>
           <Input
             id="subject_last_name"
             name="subject_last_name"
             required
             defaultValue={initialData?.subject_last_name ?? ""}
-            placeholder="שם משפחה"
+            placeholder={t("lastName")}
           />
         </div>
       </div>
@@ -103,19 +106,19 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Gender & Date of Birth */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="gender">מגדר</Label>
+          <Label htmlFor="gender">{t("gender")}</Label>
           <Select value={gender} onValueChange={setGender} name="gender" required>
             <SelectTrigger id="gender">
-              <SelectValue placeholder="בחרו מגדר" />
+              <SelectValue placeholder={t("selectGender")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="male">זכר</SelectItem>
-              <SelectItem value="female">נקבה</SelectItem>
+              <SelectItem value="male">{tCommon("male")}</SelectItem>
+              <SelectItem value="female">{tCommon("female")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="date_of_birth">תאריך לידה</Label>
+          <Label htmlFor="date_of_birth">{t("dateOfBirth")}</Label>
           <Input
             id="date_of_birth"
             name="date_of_birth"
@@ -131,7 +134,7 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Contact info */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="subject_email">דוא״ל</Label>
+          <Label htmlFor="subject_email">{t("email")}</Label>
           <Input
             id="subject_email"
             name="subject_email"
@@ -143,7 +146,7 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="subject_phone">טלפון</Label>
+          <Label htmlFor="subject_phone">{t("phone")}</Label>
           <Input
             id="subject_phone"
             name="subject_phone"
@@ -159,21 +162,21 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Height & Occupation */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="height">גובה</Label>
+          <Label htmlFor="height">{t("height")}</Label>
           <Input
             id="height"
             name="height"
             defaultValue={initialData?.height ?? ""}
-            placeholder='לדוגמה: 175 ס"מ'
+            placeholder={t("heightPlaceholder")}
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="occupation">עיסוק</Label>
+          <Label htmlFor="occupation">{t("occupation")}</Label>
           <Input
             id="occupation"
             name="occupation"
             defaultValue={initialData?.occupation ?? ""}
-            placeholder="עיסוק"
+            placeholder={t("occupation")}
           />
         </div>
       </div>
@@ -181,39 +184,39 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Education & Ethnicity */}
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="education">השכלה</Label>
+          <Label htmlFor="education">{t("education")}</Label>
           <Input
             id="education"
             name="education"
             defaultValue={initialData?.education ?? ""}
-            placeholder="השכלה"
+            placeholder={t("education")}
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="ethnicity">עדה</Label>
+          <Label htmlFor="ethnicity">{t("ethnicity")}</Label>
           <Input
             id="ethnicity"
             name="ethnicity"
             defaultValue={initialData?.ethnicity ?? ""}
-            placeholder="עדה"
+            placeholder={t("ethnicity")}
           />
         </div>
       </div>
 
       {/* Hashkafa */}
       <div className="grid gap-2">
-        <Label htmlFor="hashkafa">השקפה</Label>
+        <Label htmlFor="hashkafa">{t("hashkafa")}</Label>
         <Input
           id="hashkafa"
           name="hashkafa"
           defaultValue={initialData?.hashkafa ?? ""}
-          placeholder="השקפה דתית"
+          placeholder={t("hashkafaPlaceholder")}
         />
       </div>
 
       {/* Photo URL */}
       <div className="grid gap-2">
-        <Label htmlFor="photo_url">קישור לתמונה (אופציונלי)</Label>
+        <Label htmlFor="photo_url">{t("photoUrl")}</Label>
         <Input
           id="photo_url"
           name="photo_url"
@@ -223,29 +226,29 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
           defaultValue={initialData?.photo_url ?? ""}
           placeholder="https://example.com/photo.jpg"
         />
-        <p className="text-sm text-muted-foreground">הזינו קישור לתמונת פרופיל</p>
+        <p className="text-sm text-muted-foreground">{t("photoUrlHelp")}</p>
       </div>
 
       {/* Family background */}
       <div className="grid gap-2">
-        <Label htmlFor="family_background">רקע משפחתי</Label>
+        <Label htmlFor="family_background">{t("familyBackground")}</Label>
         <Textarea
           id="family_background"
           name="family_background"
           defaultValue={initialData?.family_background ?? ""}
-          placeholder="מידע על הרקע המשפחתי"
+          placeholder={t("familyBackgroundPlaceholder")}
           rows={3}
         />
       </div>
 
       {/* Additional info */}
       <div className="grid gap-2">
-        <Label htmlFor="additional_info">מידע נוסף</Label>
+        <Label htmlFor="additional_info">{t("additionalInfo")}</Label>
         <Textarea
           id="additional_info"
           name="additional_info"
           defaultValue={initialData?.additional_info ?? ""}
-          placeholder="מידע נוסף שתרצו לשתף"
+          placeholder={t("additionalInfoPlaceholder")}
           rows={3}
         />
       </div>
@@ -253,7 +256,7 @@ export function ProfileForm({ initialData, onSuccess }: ProfileFormProps) {
       {/* Submit button */}
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending && <Loader2 className="size-4 animate-spin" />}
-        {initialData?.id ? "עדכון פרופיל" : "יצירת פרופיל"}
+        {initialData?.id ? t("updateProfile") : t("createProfile")}
       </Button>
     </form>
   )

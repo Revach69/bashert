@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Heart } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { InterestRequestWithProfiles } from "@/types"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
@@ -21,6 +22,8 @@ export function MatchmakerEventContent({ requests }: MatchmakerEventContentProps
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all")
   const [mutualOnly, setMutualOnly] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const t = useTranslations("matchmaker")
+  const tCommon = useTranslations("common")
 
   // Calculate counts
   const counts = React.useMemo(() => {
@@ -68,9 +71,9 @@ export function MatchmakerEventContent({ requests }: MatchmakerEventContentProps
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">בקשות עניין</h1>
+        <h1 className="text-3xl font-bold">{t("requestsTitle")}</h1>
         <p className="mt-2 text-muted-foreground">
-          ניהול בקשות עניין ואישור התאמות
+          {t("requestsDescription")}
         </p>
       </div>
 
@@ -100,21 +103,20 @@ export function MatchmakerEventContent({ requests }: MatchmakerEventContentProps
             <Heart className="mb-4 size-16 text-muted-foreground/50" />
             <CardTitle className="mb-2">
               {requests.length === 0
-                ? "אין בקשות עניין עדיין"
-                : "אין תוצאות תואמות"}
+                ? t("noRequestsYet")
+                : t("noMatchingResults")}
             </CardTitle>
             <CardDescription className="text-center">
               {requests.length === 0
-                ? "כאשר משתתפים ישלחו בקשות עניין באירוע זה, הן יופיעו כאן."
-                : "נסו לשנות את הסינון כדי לראות תוצאות נוספות."}
+                ? t("noRequestsYetDescription")
+                : t("noMatchingResultsDescription")}
             </CardDescription>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {filteredRequests.length} בקשות
-            {filteredRequests.length !== requests.length && ` מתוך ${requests.length}`}
+            {tCommon("requestsOutOf", { count: filteredRequests.length, total: requests.length })}
           </p>
           {filteredRequests.map((request) => (
             <RequestCard key={request.id} request={request} />

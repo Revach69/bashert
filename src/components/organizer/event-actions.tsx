@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { toggleEventActive } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,7 @@ type EventActionsProps = {
 export function EventActions({ eventId, isActive }: EventActionsProps) {
   const router = useRouter()
   const [isPending, setIsPending] = React.useState(false)
+  const tCommon = useTranslations("common")
 
   async function handleToggle() {
     setIsPending(true)
@@ -45,7 +47,7 @@ export function EventActions({ eventId, isActive }: EventActionsProps) {
       className="w-full gap-2"
     >
       {isPending && <Loader2 className="size-4 animate-spin" />}
-      {isActive ? "השבתת אירוע" : "הפעלת אירוע"}
+      {isActive ? tCommon("inactive") : tCommon("active")}
     </Button>
   )
 }

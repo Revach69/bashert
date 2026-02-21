@@ -50,11 +50,11 @@ export async function getShadchanEvents(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות באירועי שדכנות' };
+      return { success: false, error: 'actions.loginToViewShadchanEvents' };
     }
 
     if (!user.roles.includes('matchmaker')) {
-      return { success: false, error: 'רק שדכנים יכולים לגשת לעמוד זה' };
+      return { success: false, error: 'actions.onlyShadchanim' };
     }
 
     const events = await prisma.event.findMany({
@@ -69,7 +69,7 @@ export async function getShadchanEvents(): Promise<
     return { success: true, data: events };
   } catch (error) {
     console.error('getShadchanEvents error:', error);
-    return { success: false, error: 'שגיאה בטעינת אירועי השדכנות' };
+    return { success: false, error: 'actions.shadchanEventsError' };
   }
 }
 
@@ -81,11 +81,11 @@ export async function getShadchanEventRequests(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בבקשות' };
+      return { success: false, error: 'actions.loginToViewRequests' };
     }
 
     if (!user.roles.includes('matchmaker')) {
-      return { success: false, error: 'רק שדכנים יכולים לגשת לבקשות אלו' };
+      return { success: false, error: 'actions.onlyShadchanimRequests' };
     }
 
     // Verify the event exists and user is the matchmaker for it
@@ -95,11 +95,11 @@ export async function getShadchanEventRequests(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (event.matchmaker_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לצפות בבקשות אירוע זה' };
+      return { success: false, error: 'actions.noPermissionToViewEventRequests' };
     }
 
     const requests = await prisma.interestRequest.findMany({
@@ -116,7 +116,7 @@ export async function getShadchanEventRequests(
     return { success: true, data: requests };
   } catch (error) {
     console.error('getShadchanEventRequests error:', error);
-    return { success: false, error: 'שגיאה בטעינת בקשות האירוע' };
+    return { success: false, error: 'actions.eventRequestsError' };
   }
 }
 
@@ -130,7 +130,7 @@ export async function updateRequestStatus(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לעדכן סטטוס בקשה' };
+      return { success: false, error: 'actions.loginToUpdateStatus' };
     }
 
     // Fetch the request with its event to verify matchmaker authorization
@@ -162,11 +162,11 @@ export async function updateRequestStatus(
     });
 
     if (!existingRequest) {
-      return { success: false, error: 'הבקשה לא נמצאה' };
+      return { success: false, error: 'actions.requestNotFound' };
     }
 
     if (existingRequest.event.matchmaker_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לעדכן בקשה זו' };
+      return { success: false, error: 'actions.noPermissionToUpdateRequest' };
     }
 
     // Validate input with Zod schema
@@ -177,7 +177,7 @@ export async function updateRequestStatus(
     });
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     // Build update data
@@ -221,7 +221,7 @@ export async function updateRequestStatus(
     return { success: true, data: updatedRequest };
   } catch (error) {
     console.error('updateRequestStatus error:', error);
-    return { success: false, error: 'שגיאה בעדכון סטטוס הבקשה' };
+    return { success: false, error: 'actions.statusUpdateError' };
   }
 }
 
@@ -234,7 +234,7 @@ export async function addMatchmakerNote(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי להוסיף הערה' };
+      return { success: false, error: 'actions.loginToAddNote' };
     }
 
     // Fetch the request with its event to verify matchmaker authorization
@@ -248,15 +248,15 @@ export async function addMatchmakerNote(
     });
 
     if (!existingRequest) {
-      return { success: false, error: 'הבקשה לא נמצאה' };
+      return { success: false, error: 'actions.requestNotFound' };
     }
 
     if (existingRequest.event.matchmaker_id !== user.id) {
-      return { success: false, error: 'אין הרשאה להוסיף הערה לבקשה זו' };
+      return { success: false, error: 'actions.noPermissionToAddNote' };
     }
 
     if (!note.trim()) {
-      return { success: false, error: 'יש להזין הערה' };
+      return { success: false, error: 'actions.noteRequired' };
     }
 
     const updatedRequest = await prisma.interestRequest.update({
@@ -267,6 +267,6 @@ export async function addMatchmakerNote(
     return { success: true, data: updatedRequest };
   } catch (error) {
     console.error('addMatchmakerNote error:', error);
-    return { success: false, error: 'שגיאה בהוספת ההערה' };
+    return { success: false, error: 'actions.noteAddError' };
   }
 }

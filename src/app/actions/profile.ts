@@ -22,7 +22,7 @@ export async function createProfile(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי ליצור כרטיס' };
+      return { success: false, error: 'actions.loginToCreateCard' };
     }
 
     const rawData = {
@@ -45,7 +45,7 @@ export async function createProfile(
     const parsed = createProfileSchema.safeParse(rawData);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     const data = parsed.data;
@@ -73,7 +73,7 @@ export async function createProfile(
     return { success: true, data: profile };
   } catch (error) {
     console.error('createProfile error:', error);
-    return { success: false, error: 'שגיאה ביצירת הכרטיס' };
+    return { success: false, error: 'actions.cardCreateError' };
   }
 }
 
@@ -85,7 +85,7 @@ export async function updateProfile(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לעדכן כרטיס' };
+      return { success: false, error: 'actions.loginToUpdateCard' };
     }
 
     const rawData: Record<string, unknown> = {
@@ -120,7 +120,7 @@ export async function updateProfile(
     const parsed = updateProfileSchema.safeParse(rawData);
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     const { id, ...data } = parsed.data;
@@ -132,11 +132,11 @@ export async function updateProfile(
     });
 
     if (!existing) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     if (existing.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לעדכן כרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToUpdate' };
     }
 
     // Build update data, converting empty strings to null for optional fields
@@ -157,7 +157,7 @@ export async function updateProfile(
     return { success: true, data: profile };
   } catch (error) {
     console.error('updateProfile error:', error);
-    return { success: false, error: 'שגיאה בעדכון הכרטיס' };
+    return { success: false, error: 'actions.cardUpdateError' };
   }
 }
 
@@ -169,7 +169,7 @@ export async function deleteProfile(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי למחוק כרטיס' };
+      return { success: false, error: 'actions.loginToDeleteCard' };
     }
 
     // Verify ownership
@@ -179,11 +179,11 @@ export async function deleteProfile(
     });
 
     if (!existing) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     if (existing.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה למחוק כרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToDelete' };
     }
 
     // Soft delete: set is_active to false
@@ -195,7 +195,7 @@ export async function deleteProfile(
     return { success: true, data: null };
   } catch (error) {
     console.error('deleteProfile error:', error);
-    return { success: false, error: 'שגיאה במחיקת הכרטיס' };
+    return { success: false, error: 'actions.cardDeleteError' };
   }
 }
 
@@ -207,7 +207,7 @@ export async function getMyProfiles(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בכרטיסים' };
+      return { success: false, error: 'actions.loginToViewCards' };
     }
 
     const profiles = await prisma.profileCard.findMany({
@@ -222,7 +222,7 @@ export async function getMyProfiles(): Promise<
     return { success: true, data: profiles };
   } catch (error) {
     console.error('getMyProfiles error:', error);
-    return { success: false, error: 'שגיאה בטעינת הכרטיסים' };
+    return { success: false, error: 'actions.cardLoadError' };
   }
 }
 
@@ -234,7 +234,7 @@ export async function getMyProfileIds(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בכרטיסים' };
+      return { success: false, error: 'actions.loginToViewCards' };
     }
 
     const profiles = await prisma.profileCard.findMany({
@@ -249,7 +249,7 @@ export async function getMyProfileIds(): Promise<
     return { success: true, data: profiles.map((p) => p.id) };
   } catch (error) {
     console.error('getMyProfileIds error:', error);
-    return { success: false, error: 'שגיאה בטעינת מזהי הכרטיסים' };
+    return { success: false, error: 'actions.cardIdLoadError' };
   }
 }
 
@@ -261,7 +261,7 @@ export async function getProfileById(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בכרטיס' };
+      return { success: false, error: 'actions.loginToViewCard' };
     }
 
     const profile = await prisma.profileCard.findUnique({
@@ -270,7 +270,7 @@ export async function getProfileById(
     });
 
     if (!profile) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     // If the requester is the profile owner, return full data
@@ -311,12 +311,12 @@ export async function getProfileById(
     });
 
     if (!sharedEvent) {
-      return { success: false, error: 'אין הרשאה לצפות בכרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToView' };
     }
 
     return { success: true, data: profile };
   } catch (error) {
     console.error('getProfileById error:', error);
-    return { success: false, error: 'שגיאה בטעינת הכרטיס' };
+    return { success: false, error: 'actions.cardSingleLoadError' };
   }
 }

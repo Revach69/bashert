@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Loader2, UserPlus } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { optInProfile } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Link } from "@/i18n/navigation"
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export function OptInProfileForm({
   userProfileIds,
   profileOptions = [],
 }: OptInProfileFormProps) {
+  const t = useTranslations("event")
+  const tc = useTranslations("common")
   const router = useRouter()
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -50,10 +53,10 @@ export function OptInProfileForm({
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-6">
           <p className="text-sm text-muted-foreground">
-            יש ליצור כרטיס פרופיל תחילה
+            {t("createProfileFirst")}
           </p>
           <Button variant="outline" size="sm" asChild>
-            <Link href="/profile">יצירת פרופיל</Link>
+            <Link href="/profile">{t("createProfileLink")}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -73,10 +76,10 @@ export function OptInProfileForm({
       if (result.success) {
         router.refresh()
       } else {
-        setError(result.error ?? "שגיאה בהצטרפות לאירוע")
+        setError(result.error ?? t("joinEventError"))
       }
     } catch {
-      setError("אירעה שגיאה בלתי צפויה. נסו שוב.")
+      setError(tc("unexpectedError"))
     } finally {
       setIsPending(false)
     }
@@ -87,7 +90,7 @@ export function OptInProfileForm({
     return (
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-6">
-          <p className="text-sm font-medium">הצטרפו לאירוע עם הפרופיל שלכם</p>
+          <p className="text-sm font-medium">{t("joinWithProfile")}</p>
 
           <Button
             onClick={handleOptIn}
@@ -99,7 +102,7 @@ export function OptInProfileForm({
             ) : (
               <UserPlus className="size-4" />
             )}
-            הצטרפות לאירוע
+            {t("joinEventButton")}
           </Button>
 
           {error && (
@@ -115,7 +118,7 @@ export function OptInProfileForm({
     <Card>
       <CardContent className="flex flex-col items-center gap-4 py-6">
         <p className="text-sm font-medium">
-          בחרו פרופיל להצטרפות לאירוע
+          {t("selectProfileForEvent")}
         </p>
 
         <div className="flex w-full max-w-xs flex-col gap-3">
@@ -125,7 +128,7 @@ export function OptInProfileForm({
             dir="rtl"
           >
             <SelectTrigger>
-              <SelectValue placeholder="בחרו פרופיל" />
+              <SelectValue placeholder={t("selectProfile")} />
             </SelectTrigger>
             <SelectContent>
               {profileOptions.map((profile) => (
@@ -146,7 +149,7 @@ export function OptInProfileForm({
             ) : (
               <UserPlus className="size-4" />
             )}
-            הצטרפות לאירוע
+            {t("joinEventButton")}
           </Button>
         </div>
 

@@ -38,7 +38,7 @@ export async function createInterestRequest(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לשלוח בקשת עניין' };
+      return { success: false, error: 'actions.loginToSendInterest' };
     }
 
     // Validate input with Zod
@@ -49,12 +49,12 @@ export async function createInterestRequest(
     });
     if (!parsed.success) {
       const firstIssue = parsed.error.issues[0];
-      return { success: false, error: firstIssue?.message ?? 'נתונים לא תקינים' };
+      return { success: false, error: firstIssue?.message ?? 'errors.invalidData' };
     }
 
     // Prevent self-interest
     if (requestingProfileId === targetProfileId) {
-      return { success: false, error: 'לא ניתן לשלוח בקשת עניין לעצמך' };
+      return { success: false, error: 'actions.cannotSelfInterest' };
     }
 
     // Verify requesting profile exists and user owns it
@@ -64,15 +64,15 @@ export async function createInterestRequest(
     });
 
     if (!requestingProfile) {
-      return { success: false, error: 'הכרטיס המבקש לא נמצא' };
+      return { success: false, error: 'actions.requestingCardNotFound' };
     }
 
     if (requestingProfile.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לשלוח בקשת עניין מכרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToSendFromCard' };
     }
 
     if (!requestingProfile.is_active) {
-      return { success: false, error: 'הכרטיס המבקש אינו פעיל' };
+      return { success: false, error: 'actions.requestingCardNotActive' };
     }
 
     // Verify target profile exists
@@ -82,11 +82,11 @@ export async function createInterestRequest(
     });
 
     if (!targetProfile) {
-      return { success: false, error: 'כרטיס היעד לא נמצא' };
+      return { success: false, error: 'actions.targetCardNotFound' };
     }
 
     if (!targetProfile.is_active) {
-      return { success: false, error: 'כרטיס היעד אינו פעיל' };
+      return { success: false, error: 'actions.targetCardNotActive' };
     }
 
     // Verify event exists, is active, and within request submission window
@@ -96,15 +96,15 @@ export async function createInterestRequest(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     if (!event.is_active) {
-      return { success: false, error: 'האירוע אינו פעיל' };
+      return { success: false, error: 'actions.eventNotActive' };
     }
 
     if (!canSubmitRequests(event)) {
-      return { success: false, error: 'חלון הזמן להגשת בקשות עניין הסתיים' };
+      return { success: false, error: 'actions.requestWindowClosed' };
     }
 
     // Verify both profiles are opted into this event
@@ -130,11 +130,11 @@ export async function createInterestRequest(
     ]);
 
     if (!requestingParticipation) {
-      return { success: false, error: 'הכרטיס המבקש אינו משתתף באירוע זה' };
+      return { success: false, error: 'actions.requestingNotInEvent' };
     }
 
     if (!targetParticipation) {
-      return { success: false, error: 'כרטיס היעד אינו משתתף באירוע זה' };
+      return { success: false, error: 'actions.targetNotInEvent' };
     }
 
     // Prevent duplicate request (same event + requester + target)
@@ -149,7 +149,7 @@ export async function createInterestRequest(
     });
 
     if (existingRequest) {
-      return { success: false, error: 'כבר נשלחה בקשת עניין לכרטיס זה באירוע זה' };
+      return { success: false, error: 'actions.duplicateRequest' };
     }
 
     // Check if mutual interest exists (target already sent request to requester)
@@ -241,7 +241,7 @@ export async function createInterestRequest(
     return { success: true, data: interestRequest };
   } catch (error) {
     console.error('createInterestRequest error:', error);
-    return { success: false, error: 'שגיאה בשליחת בקשת העניין' };
+    return { success: false, error: 'actions.interestSendError' };
   }
 }
 
@@ -253,7 +253,7 @@ export async function getSentInterestTargetIds(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בבקשות עניין' };
+      return { success: false, error: 'actions.loginToViewInterests' };
     }
 
     const requests = await prisma.interestRequest.findMany({
@@ -270,7 +270,7 @@ export async function getSentInterestTargetIds(
     };
   } catch (error) {
     console.error('getSentInterestTargetIds error:', error);
-    return { success: false, error: 'שגיאה בטעינת מזהי היעדים' };
+    return { success: false, error: 'actions.interestTargetIdsError' };
   }
 }
 
@@ -282,7 +282,7 @@ export async function getInterestRequestsForEvent(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בבקשות עניין' };
+      return { success: false, error: 'actions.loginToViewInterests' };
     }
 
     // Verify event exists
@@ -292,7 +292,7 @@ export async function getInterestRequestsForEvent(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     // Get all interest requests where the current user is the requester
@@ -308,7 +308,7 @@ export async function getInterestRequestsForEvent(
     return { success: true, data: requests };
   } catch (error) {
     console.error('getInterestRequestsForEvent error:', error);
-    return { success: false, error: 'שגיאה בטעינת בקשות העניין' };
+    return { success: false, error: 'actions.interestLoadError' };
   }
 }
 
@@ -320,7 +320,7 @@ export async function cancelInterestRequest(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לבטל בקשת עניין' };
+      return { success: false, error: 'actions.loginToCancelInterest' };
     }
 
     // Find the interest request and verify ownership
@@ -334,17 +334,17 @@ export async function cancelInterestRequest(
     });
 
     if (!request) {
-      return { success: false, error: 'בקשת העניין לא נמצאה' };
+      return { success: false, error: 'actions.requestNotFound' };
     }
 
     // Verify the requester (requesting profile's creator) is the current user
     if (request.requesting_profile.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לבטל בקשה זו' };
+      return { success: false, error: 'actions.noPermissionToCancel' };
     }
 
     // Only allow cancellation if status is still pending
     if (request.status !== 'pending') {
-      return { success: false, error: 'ניתן לבטל רק בקשות שטרם טופלו' };
+      return { success: false, error: 'actions.canOnlyCancelPending' };
     }
 
     // Hard delete since the request was never acted on
@@ -355,7 +355,7 @@ export async function cancelInterestRequest(
     return { success: true, data: null };
   } catch (error) {
     console.error('cancelInterestRequest error:', error);
-    return { success: false, error: 'שגיאה בביטול בקשת העניין' };
+    return { success: false, error: 'actions.cancelError' };
   }
 }
 
@@ -368,7 +368,7 @@ export async function getIncomingInterestRequests(
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בבקשות נכנסות' };
+      return { success: false, error: 'actions.loginToViewIncoming' };
     }
 
     // Verify event exists
@@ -378,7 +378,7 @@ export async function getIncomingInterestRequests(
     });
 
     if (!event) {
-      return { success: false, error: 'האירוע לא נמצא' };
+      return { success: false, error: 'actions.eventNotFound' };
     }
 
     // Verify the profile exists and belongs to the current user
@@ -388,11 +388,11 @@ export async function getIncomingInterestRequests(
     });
 
     if (!profile) {
-      return { success: false, error: 'הכרטיס לא נמצא' };
+      return { success: false, error: 'actions.cardNotFound' };
     }
 
     if (profile.creator_id !== user.id) {
-      return { success: false, error: 'אין הרשאה לצפות בבקשות עבור כרטיס זה' };
+      return { success: false, error: 'actions.noPermissionToViewRequests' };
     }
 
     // Get interest requests where the target_profile_id matches
@@ -408,6 +408,6 @@ export async function getIncomingInterestRequests(
     return { success: true, data: requests };
   } catch (error) {
     console.error('getIncomingInterestRequests error:', error);
-    return { success: false, error: 'שגיאה בטעינת הבקשות הנכנסות' };
+    return { success: false, error: 'actions.incomingLoadError' };
   }
 }

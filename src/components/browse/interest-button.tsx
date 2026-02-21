@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Heart, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { cn } from "@/lib/utils"
 import { createInterestRequest } from "@/app/actions/interest"
@@ -41,6 +42,8 @@ export function InterestButton({
   profileOptions,
   onProfileSelect,
 }: InterestButtonProps) {
+  const t = useTranslations("browse")
+
   const [isLoading, setIsLoading] = React.useState(false)
   const [isSent, setIsSent] = React.useState(alreadySent)
   const [error, setError] = React.useState<string | null>(null)
@@ -72,7 +75,7 @@ export function InterestButton({
       // Clear success feedback after 2 seconds
       setTimeout(() => setSuccess(false), 2000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "שגיאה בשליחת הבקשה")
+      setError(err instanceof Error ? err.message : t("requestSendError"))
       // Clear error after 3 seconds
       setTimeout(() => setError(null), 3000)
     } finally {
@@ -89,7 +92,7 @@ export function InterestButton({
           onValueChange={(value) => onProfileSelect?.(value)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="בחרו פרופיל" />
+            <SelectValue placeholder={t("selectProfile")} />
           </SelectTrigger>
           <SelectContent>
             {profileOptions.map((profile) => (
@@ -115,17 +118,17 @@ export function InterestButton({
         {isLoading ? (
           <>
             <Loader2 className="size-4 animate-spin" />
-            שולח...
+            {t("sending")}
           </>
         ) : isSent ? (
           <>
             <Heart className="size-4 fill-current" />
-            נשלח
+            {t("sent")}
           </>
         ) : (
           <>
             <Heart className="size-4" />
-            הביעו עניין
+            {t("expressInterest")}
           </>
         )}
       </Button>
@@ -138,7 +141,7 @@ export function InterestButton({
       {/* Success message */}
       {success && (
         <p className="text-xs text-green-600 text-center">
-          הבקשה נשלחה בהצלחה!
+          {t("requestSentSuccess")}
         </p>
       )}
     </div>

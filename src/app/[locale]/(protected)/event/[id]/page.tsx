@@ -1,0 +1,224 @@
+import { CalendarDays, CheckCircle2, Clock, Eye, Hash, MapPin, Users } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+
+import { formatHebrewDate, formatTime } from "@/lib/utils";
+import { getEventById, getEventParticipants } from "@/app/actions/event";
+import { getEventBrowseProfiles } from "@/app/actions/browse";
+import { getInterestRequestsForEvent, getSentInterestTargetIds } from "@/app/actions/interest";
+import { getMyProfiles } from "@/app/actions/profile";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { EventDetailTabs } from "@/components/browse/event-detail-tabs";
+import { OptInProfileForm } from "@/components/events/opt-in-profile-form";
+import { LeaveEventButton } from "@/components/events/leave-event-button";
+import { Link } from "@/i18n/navigation";
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function EventDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const t = await getTranslations("event");
+  const tc = await getTranslations("common");
+
+  const [eventResult, profilesResult, requestsResult, myProfilesResult, sentIdsResult, participantsResult] =
+    await Promise.all([
+      getEventById(id),
+      getEventBrowseProfiles(id),
+      getInterestRequestsForEvent(id),
+      getMyProfiles(),
+      getSentInterestTargetIds(id),
+      getEventParticipants(id),
+    ]);
+
+  const event = eventResult.success ? eventResult.data : null;
+  const profiles = profilesResult.success ? profilesResult.data : [];
+  const requests = requestsResult.success ? requestsResult.data : [];
+  const myProfiles = myProfilesResult.success ? myProfilesResult.data : [];
+  const userProfileIds = myProfiles.map((p) => p.id);
+  const sentInterestProfileIds = sentIdsResult.success ? sentIdsResult.data : [];
+  const participants = participantsResult.success ? participantsResult.data : [];
+
+  const participantProfileIds = new Set(participants.map((p) => p.id));
+  const userOptedInProfileIds = userProfileIds.filter((pid) => participantProfileIds.has(pid));
+  const userNotOptedInProfileIds = userProfileIds.filter((pid) => !participantProfileIds.has(pid));
+  const hasOptedIn = userOptedInProfileIds.length > 0;
+
+  const profileOptions = myProfiles
+    .filter((p) => !participantProfileIds.has(p.id))
+    .map((p) => ({
+      id: p.id,
+      name: `${p.subject_first_name} ${p.subject_last_name}`,
+    }));
+
+  const userProfileOptions = myProfiles.map((p) => ({
+    value: p.id,
+    label: `${p.subject_first_name} ${p.subject_last_name}`,
+  }));
+
+  const userOptedInProfiles = myProfiles.filter((p) => participantProfileIds.has(p.id));
+
+  if (!event) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold">{t("eventNotFound")}</h1>
+        <p className="mt-2 text-muted-foreground">
+          {t("eventNotFoundDescription")}
+        </p>
+        <Button asChild className="mt-6">
+          <Link href="/event">{t("backToEvents")}</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const eventDate = new Date(event.event_date);
+  const startTime = new Date(event.start_time);
+  const endTime = new Date(event.end_time);
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Event info header */}
+      <Card className="mb-8">
+        <CardHeader className="flex-row items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-2xl">{event.name}</CardTitle>
+            {event.description && (
+              <p className="text-sm text-muted-foreground">
+                {event.description}
+              </p>
+            )}
+          </div>
+          <Badge variant={event.is_active ? "default" : "secondary"}>
+            {event.is_active ? tc("active") : tc("inactive")}
+          </Badge>
+        </CardHeader>
+
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CalendarDays className="size-4 shrink-0" />
+            <span>{formatHebrewDate(eventDate)}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="size-4 shrink-0" />
+            <span>
+              {formatTime(startTime)} - {formatTime(endTime)}
+            </span>
+          </div>
+
+          {event.location && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="size-4 shrink-0" />
+              <span>{event.location}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="size-4 shrink-0" />
+            <span>{tc("participants", { count: event._count.participations })}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Hash className="size-4 shrink-0" />
+            <span>{tc("code")}</span>
+            <code
+              dir="ltr"
+              className="rounded bg-muted px-2 py-0.5 text-xs font-mono font-semibold text-start"
+            >
+              {event.join_code}
+            </code>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Opt-in section */}
+      {hasOptedIn && userNotOptedInProfileIds.length === 0 ? (
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
+            <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">
+              {t("participating")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {userOptedInProfiles.map((p) => (
+              <div key={p.id} className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {p.subject_first_name} {p.subject_last_name}
+                </span>
+                <LeaveEventButton eventId={id} profileId={p.id} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : userNotOptedInProfileIds.length > 0 ? (
+        <div className="mb-8 space-y-3">
+          {hasOptedIn && (
+            <>
+              <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 dark:border-green-900 dark:bg-green-950">
+                <CheckCircle2 className="size-5 shrink-0 text-green-600 dark:text-green-400" />
+                <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                  {t("someProfilesParticipating")}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {userOptedInProfiles.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {p.subject_first_name} {p.subject_last_name}
+                    </span>
+                    <LeaveEventButton eventId={id} profileId={p.id} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          <OptInProfileForm
+            eventId={id}
+            userProfileIds={userNotOptedInProfileIds}
+            profileOptions={profileOptions}
+          />
+        </div>
+      ) : userProfileIds.length === 0 ? (
+        <div className="mb-8">
+          <OptInProfileForm
+            eventId={id}
+            userProfileIds={[]}
+            profileOptions={[]}
+          />
+        </div>
+      ) : null}
+
+      {/* Browse link */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-xl font-semibold">{t("profilesAndRequests")}</h2>
+        <Button variant="outline" size="sm" asChild className="gap-2">
+          <Link href={`/event/${id}/browse`}>
+            <Eye className="size-4" />
+            {t("fullBrowse")}
+          </Link>
+        </Button>
+      </div>
+
+      <Separator className="mb-6" />
+
+      <EventDetailTabs
+        profiles={profiles}
+        requests={requests}
+        eventId={id}
+        userProfileIds={userProfileIds}
+        sentInterestProfileIds={sentInterestProfileIds}
+        userProfileOptions={userProfileOptions}
+      />
+    </div>
+  );
+}

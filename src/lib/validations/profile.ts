@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
 export const createProfileSchema = z.object({
-  subject_first_name: z.string().min(1, 'שם פרטי נדרש').max(50),
-  subject_last_name: z.string().min(1, 'שם משפחה נדרש').max(50),
+  subject_first_name: z.string().min(1, 'validation.firstNameRequired').max(50),
+  subject_last_name: z.string().min(1, 'validation.lastNameRequired').max(50),
   subject_email: z
     .string()
-    .email('כתובת אימייל לא תקינה')
+    .email('validation.invalidEmail')
     .max(254)
     .optional()
     .or(z.literal('')),
   subject_phone: z.string().max(20).optional().or(z.literal('')),
-  gender: z.enum(['male', 'female'], { error: 'נא לבחור מין' }),
+  gender: z.enum(['male', 'female'], { error: 'validation.selectGender' }),
   date_of_birth: z.coerce.date().refine(
     (date) => {
       const age = Math.floor(
@@ -18,7 +18,7 @@ export const createProfileSchema = z.object({
       );
       return age >= 18;
     },
-    'הגיל המינימלי הוא 18'
+    'validation.minAge'
   ),
   photo_url: z.string().url().max(2000).optional().or(z.literal('')),
   height: z.string().max(20).optional().or(z.literal('')),

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Plus } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,6 +27,7 @@ export function CreateProfileDialog({
   variant = "default",
 }: CreateProfileDialogProps) {
   const [open, setOpen] = React.useState(false)
+  const t = useTranslations("profile")
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -33,21 +35,20 @@ export function CreateProfileDialog({
         {variant === "empty-state" ? (
           <Button>
             <Plus className="size-4" />
-            יצירת כרטיס פרופיל ראשון
+            {t("createFirstProfile")}
           </Button>
         ) : (
           <Button>
             <Plus className="size-4" />
-            צור פרופיל חדש
+            {t("createNewProfile")}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>יצירת כרטיס פרופיל חדש</DialogTitle>
+          <DialogTitle>{t("createDialogTitle")}</DialogTitle>
           <DialogDescription>
-            מלאו את הפרטים ליצירת כרטיס פרופיל. ניתן ליצור כרטיסים עבור עצמכם
-            או עבור בני משפחה.
+            {t("createDialogDescription")}
           </DialogDescription>
         </DialogHeader>
         <ProfileForm onSuccess={() => setOpen(false)} />

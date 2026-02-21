@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Search } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { getEventByJoinCode } from "@/app/actions/event"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,8 @@ import { Input } from "@/components/ui/input"
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function JoinEventForm() {
+  const t = useTranslations("event")
+  const tc = useTranslations("common")
   const router = useRouter()
   const [isPending, setIsPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -34,10 +37,10 @@ export function JoinEventForm() {
         // Navigate to the event detail page
         router.push(`/event/${result.data.id}`)
       } else {
-        setError(result.error ?? "קוד האירוע לא נמצא. בדקו את הקוד ונסו שוב.")
+        setError(result.error ?? t("joinError"))
       }
     } catch {
-      setError("אירעה שגיאה בלתי צפויה. נסו שוב.")
+      setError(tc("unexpectedError"))
     } finally {
       setIsPending(false)
     }
@@ -49,11 +52,11 @@ export function JoinEventForm() {
         <Input
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="קוד אירוע"
+          placeholder={t("joinCodePlaceholder")}
           className="max-w-xs"
           dir="ltr"
           maxLength={6}
-          aria-label="קוד הצטרפות לאירוע"
+          aria-label={t("joinCodeAriaLabel")}
         />
         <Button type="submit" disabled={isPending || !code.trim()}>
           {isPending ? (
@@ -61,7 +64,7 @@ export function JoinEventForm() {
           ) : (
             <Search className="size-4" />
           )}
-          הצטרפות
+          {t("joinButton")}
         </Button>
       </div>
 
@@ -71,7 +74,7 @@ export function JoinEventForm() {
 
       {success && (
         <p className="text-sm text-green-600 dark:text-green-400">
-          האירוע נמצא! מעבירים אתכם לדף האירוע לשיוך פרופיל...
+          {t("joinSuccess")}
         </p>
       )}
     </form>

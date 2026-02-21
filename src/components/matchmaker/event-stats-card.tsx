@@ -1,4 +1,7 @@
+"use client"
+
 import { MessageSquare, Heart, CheckCircle, Clock } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -19,24 +22,26 @@ export function EventStatsCard({
   mutualCount,
   approvedCount,
 }: EventStatsCardProps) {
+  const t = useTranslations("matchmaker")
+
   const stats = [
     {
-      label: "סה״כ בקשות",
+      label: t("totalRequests"),
       value: totalRequests,
       icon: MessageSquare,
     },
     {
-      label: "ממתינות",
+      label: t("pendingRequests"),
       value: pendingCount,
       icon: Clock,
     },
     {
-      label: "הדדיות",
+      label: t("mutualRequests"),
       value: mutualCount,
       icon: Heart,
     },
     {
-      label: "מאושרות",
+      label: t("approvedRequests"),
       value: approvedCount,
       icon: CheckCircle,
     },

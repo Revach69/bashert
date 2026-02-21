@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  email: z.string().email('כתובת אימייל לא תקינה'),
-  password: z.string().min(6, 'סיסמה חייבת להיות לפחות 6 תווים'),
+  email: z.string().email('validation.invalidEmail'),
+  password: z.string().min(6, 'validation.passwordMinLength'),
 });
 
 export const registerSchema = z.object({
-  full_name: z.string().min(2, 'שם מלא נדרש').max(100),
-  email: z.string().email('כתובת אימייל לא תקינה'),
-  password: z.string().min(6, 'סיסמה חייבת להיות לפחות 6 תווים'),
+  full_name: z.string().min(2, 'validation.fullNameRequired').max(100),
+  email: z.string().email('validation.invalidEmail'),
+  password: z.string().min(6, 'validation.passwordMinLength'),
   phone: z.string().optional().or(z.literal('')),
 });
 

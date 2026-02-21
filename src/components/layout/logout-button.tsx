@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import type { ComponentProps } from 'react';
@@ -21,6 +22,7 @@ export function LogoutButton({
   onLogout,
 }: LogoutButtonProps) {
   const router = useRouter();
+  const t = useTranslations('common');
 
   async function handleLogout() {
     const supabase = createSupabaseBrowserClient();
@@ -37,7 +39,7 @@ export function LogoutButton({
       className={className}
       onClick={handleLogout}
     >
-      יציאה
+      {t('logout')}
     </Button>
   );
 }

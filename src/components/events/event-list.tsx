@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { CalendarDays } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import type { EventWithDetails } from "@/types"
 import {
@@ -21,14 +22,16 @@ type EventListProps = {
 // ─── Component ──────────────────────────────────────────────────────────────────
 
 export function EventList({ events }: EventListProps) {
+  const t = useTranslations("event")
+
   if (events.length === 0) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-16">
           <CalendarDays className="mb-4 size-16 text-muted-foreground/50" />
-          <CardTitle className="mb-2">אין אירועים פעילים</CardTitle>
+          <CardTitle className="mb-2">{t("noEventsTitle")}</CardTitle>
           <CardDescription className="text-center">
-            הצטרפו לאירוע באמצעות קוד הזמנה או צרו אירוע חדש כדי להתחיל
+            {t("noEventsDescription")}
           </CardDescription>
         </CardContent>
       </Card>

@@ -43,7 +43,7 @@ export async function getDashboardStats(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בנתונים' };
+      return { success: false, error: 'actions.loginToViewDashboard' };
     }
 
     // Count active profile cards created by user
@@ -84,7 +84,7 @@ export async function getDashboardStats(): Promise<
     };
   } catch (error) {
     console.error('getDashboardStats error:', error);
-    return { success: false, error: 'שגיאה בטעינת נתוני לוח הבקרה' };
+    return { success: false, error: 'actions.dashboardLoadError' };
   }
 }
 
@@ -96,11 +96,11 @@ export async function getOrganizerStats(): Promise<
   try {
     const user = await getCurrentUser();
     if (!user) {
-      return { success: false, error: 'יש להתחבר כדי לצפות בנתוני מארגן' };
+      return { success: false, error: 'actions.loginToViewOrganizerData' };
     }
 
     if (!user.roles.includes('organizer')) {
-      return { success: false, error: 'רק מארגנים יכולים לגשת לנתונים אלו' };
+      return { success: false, error: 'actions.onlyOrganizersData' };
     }
 
     // Get all events organized by this user
@@ -131,6 +131,6 @@ export async function getOrganizerStats(): Promise<
     };
   } catch (error) {
     console.error('getOrganizerStats error:', error);
-    return { success: false, error: 'שגיאה בטעינת נתוני המארגן' };
+    return { success: false, error: 'actions.organizerDataError' };
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Menu, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { LogoutButton } from "@/components/layout/logout-button";
+import { Link } from "@/i18n/navigation";
 
 interface MobileNavProps {
   isAuthenticated: boolean;
@@ -26,11 +27,12 @@ export function MobileNav({
   isOrganizer = false,
 }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("common");
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="תפריט ניווט">
+        <Button variant="ghost" size="icon" aria-label={t("navMenu")}>
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
@@ -38,7 +40,7 @@ export function MobileNav({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Heart className="size-5 text-primary" />
-            <span className="text-primary">בשערט</span>
+            <span className="text-primary">{t("appName")}</span>
           </SheetTitle>
         </SheetHeader>
         <Separator />
@@ -50,21 +52,21 @@ export function MobileNav({
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                לוח בקרה
+                {t("dashboard")}
               </Link>
               <Link
                 href="/profile"
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                פרופילים
+                {t("profiles")}
               </Link>
               <Link
                 href="/event"
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                אירועים
+                {t("events")}
               </Link>
               {isMatchmaker && (
                 <Link
@@ -72,7 +74,7 @@ export function MobileNav({
                   onClick={() => setOpen(false)}
                   className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
                 >
-                  שדכן
+                  {t("matchmaker")}
                 </Link>
               )}
               {isOrganizer && (
@@ -81,7 +83,7 @@ export function MobileNav({
                   onClick={() => setOpen(false)}
                   className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
                 >
-                  מארגן
+                  {t("organizer")}
                 </Link>
               )}
               <Separator />
@@ -98,10 +100,10 @@ export function MobileNav({
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent"
               >
-                כניסה
+                {t("login")}
               </Link>
               <Link href="/auth/register" onClick={() => setOpen(false)}>
-                <Button className="w-full">הרשמה</Button>
+                <Button className="w-full">{t("register")}</Button>
               </Link>
             </>
           )}
